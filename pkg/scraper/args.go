@@ -1,7 +1,9 @@
 package scraper
 
 import (
+	"github.com/apoldev/trackchecker/pkg/scraper/document"
 	"github.com/tidwall/sjson"
+	"net/http"
 )
 
 const (
@@ -14,16 +16,24 @@ const (
 
 // Args is a struct for passing arguments to scraper
 type Args struct {
-	Document      Document
-	Variables     Variables
 	ResultBuilder *ResultBuilder
+
+	document   document.Document
+	variables  Variables
+	httpClient *http.Client
 }
 
-// Document can be HTML, JSON, XML, etc.
-type Document interface {
-	Value() interface{}
-	FindOne(expr string) Document
-	FindAll(expr string) []Document
+func NewArgs(variables Variables, httpClient *http.Client) *Args {
+	cl := http.DefaultClient
+	if httpClient != nil {
+		cl = httpClient
+	}
+
+	return &Args{
+		ResultBuilder: NewResultBuilder(),
+		variables:     variables,
+		httpClient:    cl,
+	}
 }
 
 type ResultBuilder struct {

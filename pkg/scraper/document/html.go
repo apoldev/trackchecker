@@ -3,14 +3,13 @@ package document
 import (
 	"bytes"
 	"github.com/PuerkitoBio/goquery"
-	"github.com/apoldev/trackchecker/pkg/scraper"
 )
 
 type HtmlDoc struct {
 	selection *goquery.Selection
 }
 
-func NewHtml(data []byte) scraper.Document {
+func NewHtml(data []byte) Document {
 
 	doc, _ := goquery.NewDocumentFromReader(bytes.NewReader(data))
 
@@ -28,7 +27,7 @@ func (d *HtmlDoc) Value() interface{} {
 	return d.selection.First().Text()
 }
 
-func (d *HtmlDoc) FindOne(expr string) scraper.Document {
+func (d *HtmlDoc) FindOne(expr string) Document {
 
 	selection := d.selection.Find(expr)
 
@@ -37,11 +36,11 @@ func (d *HtmlDoc) FindOne(expr string) scraper.Document {
 	}
 }
 
-func (d *HtmlDoc) FindAll(expr string) []scraper.Document {
+func (d *HtmlDoc) FindAll(expr string) []Document {
 
 	selection := d.selection.Find(expr)
 
-	docs := make([]scraper.Document, 0, selection.Length())
+	docs := make([]Document, 0, selection.Length())
 
 	selection.Each(func(i int, selection *goquery.Selection) {
 		docs = append(docs, &HtmlDoc{

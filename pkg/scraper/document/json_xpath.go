@@ -3,14 +3,13 @@ package document
 import (
 	"bytes"
 	"github.com/antchfx/jsonquery"
-	"github.com/apoldev/trackchecker/pkg/scraper"
 )
 
 type JsonXpathDoc struct {
 	node *jsonquery.Node
 }
 
-func NewJsonXpath(data []byte) scraper.Document {
+func NewJsonXpath(data []byte) Document {
 
 	node, _ := jsonquery.Parse(bytes.NewReader(data))
 
@@ -29,7 +28,7 @@ func (d *JsonXpathDoc) Value() interface{} {
 	return d.node.Value()
 }
 
-func (d *JsonXpathDoc) FindOne(expr string) scraper.Document {
+func (d *JsonXpathDoc) FindOne(expr string) Document {
 
 	node, _ := jsonquery.Query(d.node, expr)
 
@@ -39,7 +38,7 @@ func (d *JsonXpathDoc) FindOne(expr string) scraper.Document {
 
 }
 
-func (d *JsonXpathDoc) FindAll(expr string) []scraper.Document {
+func (d *JsonXpathDoc) FindAll(expr string) []Document {
 
 	nodes, err := jsonquery.QueryAll(d.node, expr)
 
@@ -47,7 +46,7 @@ func (d *JsonXpathDoc) FindAll(expr string) []scraper.Document {
 		return nil
 	}
 
-	docs := make([]scraper.Document, 0, len(nodes))
+	docs := make([]Document, 0, len(nodes))
 
 	for _, node := range nodes {
 		docs = append(docs, &JsonXpathDoc{

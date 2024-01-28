@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"github.com/antchfx/htmlquery"
 	"github.com/antchfx/xpath"
-	"github.com/apoldev/trackchecker/pkg/scraper"
 	"golang.org/x/net/html"
 )
 
@@ -13,7 +12,7 @@ type HtmlXpathDoc struct {
 	navigator xpath.NodeNavigator
 }
 
-func NewHtmlXpath(data []byte) scraper.Document {
+func NewHtmlXpath(data []byte) Document {
 
 	node, _ := htmlquery.Parse(bytes.NewReader(data))
 
@@ -31,7 +30,7 @@ func (d *HtmlXpathDoc) Value() interface{} {
 	return htmlquery.InnerText(d.node)
 }
 
-func (d *HtmlXpathDoc) FindOne(expr string) scraper.Document {
+func (d *HtmlXpathDoc) FindOne(expr string) Document {
 	var err error
 	var exp *xpath.Expr
 
@@ -80,7 +79,7 @@ func (d *HtmlXpathDoc) FindOne(expr string) scraper.Document {
 
 }
 
-func (d *HtmlXpathDoc) FindAll(expr string) []scraper.Document {
+func (d *HtmlXpathDoc) FindAll(expr string) []Document {
 
 	nodes, err := htmlquery.QueryAll(d.node, expr)
 
@@ -88,7 +87,7 @@ func (d *HtmlXpathDoc) FindAll(expr string) []scraper.Document {
 		return nil
 	}
 
-	docs := make([]scraper.Document, 0, len(nodes))
+	docs := make([]Document, 0, len(nodes))
 
 	for _, node := range nodes {
 		docs = append(docs, &HtmlXpathDoc{

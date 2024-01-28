@@ -1,7 +1,6 @@
 package document
 
 import (
-	"github.com/apoldev/trackchecker/pkg/scraper"
 	"github.com/tidwall/gjson"
 )
 
@@ -9,7 +8,7 @@ type JsonDoc struct {
 	data *gjson.Result
 }
 
-func NewJson(data []byte) scraper.Document {
+func NewJson(data []byte) Document {
 
 	result := gjson.ParseBytes(data)
 
@@ -29,7 +28,7 @@ func (d *JsonDoc) Value() interface{} {
 	return d.data.Value()
 }
 
-func (d *JsonDoc) FindOne(path string) scraper.Document {
+func (d *JsonDoc) FindOne(path string) Document {
 
 	result := d.data.Get(path)
 
@@ -39,10 +38,10 @@ func (d *JsonDoc) FindOne(path string) scraper.Document {
 
 }
 
-func (d *JsonDoc) FindAll(path string) []scraper.Document {
+func (d *JsonDoc) FindAll(path string) []Document {
 
 	array := d.data.Get(path).Array()
-	result := make([]scraper.Document, 0, len(array))
+	result := make([]Document, 0, len(array))
 
 	for i := range array {
 		result = append(result, &JsonDoc{
