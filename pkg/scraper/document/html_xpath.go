@@ -2,24 +2,22 @@ package document
 
 import (
 	"bytes"
+
 	"github.com/antchfx/htmlquery"
 	"github.com/antchfx/xpath"
 	"golang.org/x/net/html"
 )
 
 type HtmlXpathDoc struct {
-	node      *html.Node
-	navigator xpath.NodeNavigator
+	node *html.Node
 }
 
 func NewHtmlXpath(data []byte) Document {
-
 	node, _ := htmlquery.Parse(bytes.NewReader(data))
 
 	return &HtmlXpathDoc{
 		node: node,
 	}
-
 }
 
 func (d *HtmlXpathDoc) Value() interface{} {
@@ -44,8 +42,8 @@ func (d *HtmlXpathDoc) FindOne(expr string) Document {
 
 	navigator := htmlquery.CreateXPathNavigator(d.node)
 
-	//h := GetCurrentNodeFromNavigator(navigator)
-	//fmt.Println(expr, "navigator", string(HtmlNodeToBytes(*h)))
+	// h := GetCurrentNodeFromNavigator(navigator)
+	// fmt.Println(expr, "navigator", string(HtmlNodeToBytes(*h)))
 
 	itemNode := exp.Evaluate(navigator)
 
@@ -68,7 +66,6 @@ func (d *HtmlXpathDoc) FindOne(expr string) Document {
 		}
 
 		// todo bool, float64
-
 	}
 
 	node, _ := htmlquery.Query(d.node, expr)
@@ -76,11 +73,9 @@ func (d *HtmlXpathDoc) FindOne(expr string) Document {
 	return &HtmlXpathDoc{
 		node: node,
 	}
-
 }
 
 func (d *HtmlXpathDoc) FindAll(expr string) []Document {
-
 	nodes, err := htmlquery.QueryAll(d.node, expr)
 
 	if err != nil {
@@ -96,7 +91,6 @@ func (d *HtmlXpathDoc) FindAll(expr string) []Document {
 	}
 
 	return docs
-
 }
 
 func GetCurrentNodeFromNavigator(n *htmlquery.NodeNavigator) *html.Node {
@@ -111,7 +105,6 @@ func GetCurrentNodeFromNavigator(n *htmlquery.NodeNavigator) *html.Node {
 			FirstChild: childNode,
 			LastChild:  childNode,
 		}
-
 	}
 	return n.Current()
 }

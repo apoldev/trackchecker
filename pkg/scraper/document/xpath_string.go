@@ -8,10 +8,10 @@ func (d *StringDoc) Value() interface{} {
 	return d.value
 }
 
-func (d *StringDoc) FindOne(expr string) Document {
+func (d *StringDoc) FindOne(_ string) Document {
 	return nil
 }
 
-func (d *StringDoc) FindAll(expr string) []Document {
+func (d *StringDoc) FindAll(_ string) []Document {
 	return nil
 }

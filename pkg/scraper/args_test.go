@@ -2,12 +2,12 @@ package scraper
 
 import (
 	"encoding/json"
-	"github.com/go-playground/assert/v2"
 	"testing"
+
+	"github.com/go-playground/assert/v2"
 )
 
 func TestResultBuilder(t *testing.T) {
-
 	b := NewResultBuilder()
 
 	assert.Equal(t, b.GetData(), []byte("{}"))

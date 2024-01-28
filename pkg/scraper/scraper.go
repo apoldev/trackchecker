@@ -2,12 +2,13 @@ package scraper
 
 import (
 	"errors"
-	"github.com/apoldev/trackchecker/pkg/scraper/document"
 	"io"
 	"maps"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/apoldev/trackchecker/pkg/scraper/document"
 )
 
 const (
@@ -20,20 +21,19 @@ var (
 	ErrorDocumentIsNil = errors.New("document is nil")
 	DefaultHeaders     = map[string]string{
 		"User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.152 Safari/537.36",
-		//"Accept-Encoding": "gzip, deflate",
+		// "Accept-Encoding": "gzip, deflate",
 		"Accept-Language": "en-US;q=0.6,en;q=0.4",
 		"Encoding":        "utf-8",
 	}
 )
 
-// Scraper can scrape data from delivery service
+// Scraper can scrape data from delivery service.
 type Scraper struct {
 	Code  string `json:"code,omitempty"`
 	Tasks []Task `json:"tasks,omitempty"`
 }
 
 func (s *Scraper) Scrape(args *Args) error {
-
 	for i := range s.Tasks {
 		err := s.Tasks[i].Process(args)
 		if err != nil {
@@ -52,7 +52,6 @@ type Task struct {
 }
 
 func (t *Task) Process(args *Args) error {
-
 	t.Payload = args.variables.ReplaceStringFromVariables(t.Payload)
 
 	switch t.Type {
@@ -67,14 +66,13 @@ func (t *Task) Process(args *Args) error {
 	return nil
 }
 
-// Source creates document from payload
+// Source creates document from payload.
 func (t *Task) Source(args *Args) error {
 	return t.selectDocType([]byte(t.Payload), args)
 }
 
-// Request makes http request
+// Request makes http request.
 func (t *Task) Request(args *Args) error {
-
 	var err error
 	var data []byte
 	var method string
@@ -125,13 +123,12 @@ func (t *Task) Request(args *Args) error {
 	return t.selectDocType(data, args)
 }
 
-// Query parses document with xpath or jsonpath or css selector
+// Query parses document with xpath or jsonpath or css selector.
 func (t *Task) Query(args *Args) error {
 	return t.parseDoc(args.document, args.ResultBuilder, &t.Field, t.Field.Path)
 }
 
 func (t *Task) parseDoc(doc document.Document, builder *ResultBuilder, field *Field, path string) error {
-
 	query := field.Query
 
 	if query == "" {
@@ -139,7 +136,6 @@ func (t *Task) parseDoc(doc document.Document, builder *ResultBuilder, field *Fi
 	}
 
 	if field.Type == FieldTypeArray {
-
 		nodes := doc.FindAll(query)
 
 		for i := range nodes {
@@ -153,28 +149,21 @@ func (t *Task) parseDoc(doc document.Document, builder *ResultBuilder, field *Fi
 					t.parseDoc(node, builder, field.Element.Object[j], newPath+"."+field.Element.Object[j].Path)
 				}
 			}
-
 		}
-
 	} else if field.Type == FieldTypeObject {
-
 		node := doc.FindOne(query)
 		for j := range field.Object {
 			t.parseDoc(node, builder, field.Object[j], path+"."+field.Object[j].Path)
 		}
-
 	} else if field.Type == "" {
-
 		node := doc.FindOne(query)
 		builder.Set(path, node.Value())
-
 	}
 
 	return nil
 }
 
 func (t *Task) selectDocType(data []byte, args *Args) error {
-
 	// replace to switch
 
 	if t.Params["type"] == JSON {
@@ -192,5 +181,4 @@ func (t *Task) selectDocType(data []byte, args *Args) error {
 	}
 
 	return nil
-
 }

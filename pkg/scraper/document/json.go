@@ -9,37 +9,30 @@ type JsonDoc struct {
 }
 
 func NewJson(data []byte) Document {
-
 	result := gjson.ParseBytes(data)
 
 	return &JsonDoc{
 		data: &result,
 	}
-
 }
 
 func (d *JsonDoc) Value() interface{} {
-
 	if d.data == nil {
 		return nil
-
 	}
 
 	return d.data.Value()
 }
 
 func (d *JsonDoc) FindOne(path string) Document {
-
 	result := d.data.Get(path)
 
 	return &JsonDoc{
 		data: &result,
 	}
-
 }
 
 func (d *JsonDoc) FindAll(path string) []Document {
-
 	array := d.data.Get(path).Array()
 	result := make([]Document, 0, len(array))
 

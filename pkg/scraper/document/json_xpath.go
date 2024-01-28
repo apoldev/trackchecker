@@ -2,6 +2,7 @@ package document
 
 import (
 	"bytes"
+
 	"github.com/antchfx/jsonquery"
 )
 
@@ -10,17 +11,14 @@ type JsonXpathDoc struct {
 }
 
 func NewJsonXpath(data []byte) Document {
-
 	node, _ := jsonquery.Parse(bytes.NewReader(data))
 
 	return &JsonXpathDoc{
 		node: node,
 	}
-
 }
 
 func (d *JsonXpathDoc) Value() interface{} {
-
 	if d.node == nil {
 		return nil
 	}
@@ -29,17 +27,14 @@ func (d *JsonXpathDoc) Value() interface{} {
 }
 
 func (d *JsonXpathDoc) FindOne(expr string) Document {
-
 	node, _ := jsonquery.Query(d.node, expr)
 
 	return &JsonXpathDoc{
 		node: node,
 	}
-
 }
 
 func (d *JsonXpathDoc) FindAll(expr string) []Document {
-
 	nodes, err := jsonquery.QueryAll(d.node, expr)
 
 	if err != nil {
@@ -55,5 +50,4 @@ func (d *JsonXpathDoc) FindAll(expr string) []Document {
 	}
 
 	return docs
-
 }

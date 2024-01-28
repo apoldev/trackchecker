@@ -2,6 +2,7 @@ package document
 
 import (
 	"bytes"
+
 	"github.com/PuerkitoBio/goquery"
 )
 
@@ -10,7 +11,6 @@ type HtmlDoc struct {
 }
 
 func NewHtml(data []byte) Document {
-
 	doc, _ := goquery.NewDocumentFromReader(bytes.NewReader(data))
 
 	return &HtmlDoc{
@@ -19,7 +19,6 @@ func NewHtml(data []byte) Document {
 }
 
 func (d *HtmlDoc) Value() interface{} {
-
 	if d.selection == nil {
 		return nil
 	}
@@ -28,7 +27,6 @@ func (d *HtmlDoc) Value() interface{} {
 }
 
 func (d *HtmlDoc) FindOne(expr string) Document {
-
 	selection := d.selection.Find(expr)
 
 	return &HtmlDoc{
@@ -37,7 +35,6 @@ func (d *HtmlDoc) FindOne(expr string) Document {
 }
 
 func (d *HtmlDoc) FindAll(expr string) []Document {
-
 	selection := d.selection.Find(expr)
 
 	docs := make([]Document, 0, selection.Length())

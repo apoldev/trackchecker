@@ -6,7 +6,7 @@ const (
 	FieldTypeArray  = "array"
 )
 
-// Field describes a field in result
+// Field describes a field in result.
 type Field struct {
 	Path string `json:"path,omitempty"`
 	Type string `json:"type,omitempty"`

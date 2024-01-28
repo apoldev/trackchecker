@@ -1,9 +1,10 @@
 package scraper
 
 import (
+	"net/http"
+
 	"github.com/apoldev/trackchecker/pkg/scraper/document"
 	"github.com/tidwall/sjson"
-	"net/http"
 )
 
 const (
@@ -14,7 +15,7 @@ const (
 	XPATH     = "xpath"
 )
 
-// Args is a struct for passing arguments to scraper
+// Args is a struct for passing arguments to scraper.
 type Args struct {
 	ResultBuilder *ResultBuilder
 

@@ -3,7 +3,6 @@ package scraper
 import "testing"
 
 func TestVariables_ReplaceStringFromVariables(t *testing.T) {
-
 	cases := []struct {
 		variable Variables
 		value    string
