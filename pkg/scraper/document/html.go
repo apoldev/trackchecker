@@ -10,7 +10,7 @@ type HtmlDoc struct {
 	selection *goquery.Selection
 }
 
-func NewHtml(data []byte) Document {
+func NewHtml(data []byte) *HtmlDoc {
 	doc, _ := goquery.NewDocumentFromReader(bytes.NewReader(data))
 
 	return &HtmlDoc{
@@ -26,12 +26,12 @@ func (d *HtmlDoc) Value() interface{} {
 	return d.selection.First().Text()
 }
 
-func (d *HtmlDoc) FindOne(expr string) Document {
+func (d *HtmlDoc) FindOne(expr string) (Document, error) {
 	selection := d.selection.Find(expr)
 
 	return &HtmlDoc{
 		selection: selection,
-	}
+	}, nil
 }
 
 func (d *HtmlDoc) FindAll(expr string) []Document {

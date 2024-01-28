@@ -12,7 +12,7 @@ type HtmlXpathDoc struct {
 	node *html.Node
 }
 
-func NewHtmlXpath(data []byte) Document {
+func NewHtmlXpath(data []byte) *HtmlXpathDoc {
 	node, _ := htmlquery.Parse(bytes.NewReader(data))
 
 	return &HtmlXpathDoc{
@@ -28,16 +28,14 @@ func (d *HtmlXpathDoc) Value() interface{} {
 	return htmlquery.InnerText(d.node)
 }
 
-func (d *HtmlXpathDoc) FindOne(expr string) Document {
+func (d *HtmlXpathDoc) FindOne(expr string) (Document, error) {
 	var err error
 	var exp *xpath.Expr
 
 	exp, err = xpath.Compile(expr)
 
 	if err != nil {
-		return &HtmlXpathDoc{
-			node: nil,
-		}
+		return nil, err
 	}
 
 	navigator := htmlquery.CreateXPathNavigator(d.node)
@@ -56,23 +54,19 @@ func (d *HtmlXpathDoc) FindOne(expr string) Document {
 		if v, ok := iterator.Current().(*htmlquery.NodeNavigator); ok {
 			return &HtmlXpathDoc{
 				node: v.Current(),
-			}
+			}, nil
 		}
 
 	case string:
 
 		return &StringDoc{
 			value: itemNode.(string),
-		}
+		}, nil
 
 		// todo bool, float64
 	}
 
-	node, _ := htmlquery.Query(d.node, expr)
-
-	return &HtmlXpathDoc{
-		node: node,
-	}
+	return nil, ErrorNotexist
 }
 
 func (d *HtmlXpathDoc) FindAll(expr string) []Document {

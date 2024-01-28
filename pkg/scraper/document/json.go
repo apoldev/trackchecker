@@ -8,7 +8,7 @@ type JsonDoc struct {
 	data *gjson.Result
 }
 
-func NewJson(data []byte) Document {
+func NewJson(data []byte) *JsonDoc {
 	result := gjson.ParseBytes(data)
 
 	return &JsonDoc{
@@ -24,12 +24,16 @@ func (d *JsonDoc) Value() interface{} {
 	return d.data.Value()
 }
 
-func (d *JsonDoc) FindOne(path string) Document {
+func (d *JsonDoc) FindOne(path string) (Document, error) {
 	result := d.data.Get(path)
+
+	if !result.Exists() {
+		return nil, ErrorNotexist
+	}
 
 	return &JsonDoc{
 		data: &result,
-	}
+	}, nil
 }
 
 func (d *JsonDoc) FindAll(path string) []Document {

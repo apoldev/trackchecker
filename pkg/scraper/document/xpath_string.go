@@ -8,8 +8,8 @@ func (d *StringDoc) Value() interface{} {
 	return d.value
 }
 
-func (d *StringDoc) FindOne(_ string) Document {
-	return nil
+func (d *StringDoc) FindOne(_ string) (Document, error) {
+	return nil, ErrorNotexist
 }
 
 func (d *StringDoc) FindAll(_ string) []Document {

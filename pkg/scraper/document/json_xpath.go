@@ -10,7 +10,7 @@ type JsonXpathDoc struct {
 	node *jsonquery.Node
 }
 
-func NewJsonXpath(data []byte) Document {
+func NewJsonXpath(data []byte) *JsonXpathDoc {
 	node, _ := jsonquery.Parse(bytes.NewReader(data))
 
 	return &JsonXpathDoc{
@@ -26,12 +26,16 @@ func (d *JsonXpathDoc) Value() interface{} {
 	return d.node.Value()
 }
 
-func (d *JsonXpathDoc) FindOne(expr string) Document {
-	node, _ := jsonquery.Query(d.node, expr)
+func (d *JsonXpathDoc) FindOne(expr string) (Document, error) {
+	node, err := jsonquery.Query(d.node, expr)
+
+	if err != nil {
+		return nil, err
+	}
 
 	return &JsonXpathDoc{
 		node: node,
-	}
+	}, nil
 }
 
 func (d *JsonXpathDoc) FindAll(expr string) []Document {

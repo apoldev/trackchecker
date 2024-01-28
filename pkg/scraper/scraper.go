@@ -129,6 +129,10 @@ func (t *Task) Query(args *Args) error {
 }
 
 func (t *Task) parseDoc(doc document.Document, builder *ResultBuilder, field *Field, path string) error {
+
+	var err error
+	var node document.Document
+
 	query := field.Query
 
 	if query == "" {
@@ -151,12 +155,21 @@ func (t *Task) parseDoc(doc document.Document, builder *ResultBuilder, field *Fi
 			}
 		}
 	} else if field.Type == FieldTypeObject {
-		node := doc.FindOne(query)
+		node, err = doc.FindOne(query)
+
+		if err != nil {
+			return err
+		}
+
 		for j := range field.Object {
 			t.parseDoc(node, builder, field.Object[j], path+"."+field.Object[j].Path)
 		}
 	} else if field.Type == "" {
-		node := doc.FindOne(query)
+		node, err = doc.FindOne(query)
+		if err != nil {
+			return err
+		}
+
 		builder.Set(path, node.Value())
 	}
 
