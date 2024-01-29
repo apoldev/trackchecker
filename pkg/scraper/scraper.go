@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/apoldev/trackchecker/pkg/scraper/document"
 )
@@ -34,6 +35,11 @@ type Scraper struct {
 }
 
 func (s *Scraper) Scrape(args *Args) error {
+	start := time.Now()
+	defer func() {
+		args.ExecuteTime = time.Since(start)
+	}()
+
 	for i := range s.Tasks {
 		err := s.Tasks[i].Process(args)
 		if err != nil {
@@ -129,7 +135,6 @@ func (t *Task) Query(args *Args) error {
 }
 
 func (t *Task) parseDoc(doc document.Document, builder *ResultBuilder, field *Field, path string) error {
-
 	var err error
 	var node document.Document
 

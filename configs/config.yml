@@ -1,0 +1,15 @@
+config_spiders: ./configs/spiders.json
+http_server:
+  port: 8080
+
+redis:
+  host: redis
+  port: 6379
+
+nats:
+  server: nats://nats:4222
+  subject: tracking
+  stream_name: TRACKING
+  durable_name: durable
+  worker_count: 10
+

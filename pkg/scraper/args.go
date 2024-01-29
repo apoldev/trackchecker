@@ -2,6 +2,7 @@ package scraper
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/apoldev/trackchecker/pkg/scraper/document"
 	"github.com/tidwall/sjson"
@@ -18,6 +19,7 @@ const (
 // Args is a struct for passing arguments to scraper.
 type Args struct {
 	ResultBuilder *ResultBuilder
+	ExecuteTime   time.Duration
 
 	document   document.Document
 	variables  Variables
