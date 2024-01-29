@@ -2,7 +2,6 @@ package scraper
 
 import (
 	"errors"
-	"fmt"
 	"io"
 	"maps"
 	"net/http"
@@ -144,8 +143,6 @@ func (t *Task) parseDoc(doc document.Document, builder *ResultBuilder, field *Fi
 	if query == "" {
 		query = t.Payload
 	}
-
-	fmt.Println("q", query, doc)
 
 	if field.Type == FieldTypeArray {
 		nodes := doc.FindAll(query)
