@@ -10,12 +10,16 @@ type HtmlDoc struct {
 	selection *goquery.Selection
 }
 
-func NewHtml(data []byte) *HtmlDoc {
-	doc, _ := goquery.NewDocumentFromReader(bytes.NewReader(data))
+func NewHtml(data []byte) (*HtmlDoc, error) {
+	doc, err := goquery.NewDocumentFromReader(bytes.NewReader(data))
+
+	if err != nil {
+		return nil, err
+	}
 
 	return &HtmlDoc{
 		selection: doc.Selection,
-	}
+	}, nil
 }
 
 func (d *HtmlDoc) Value() interface{} {

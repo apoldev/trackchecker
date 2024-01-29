@@ -8,12 +8,12 @@ type JsonDoc struct {
 	data *gjson.Result
 }
 
-func NewJson(data []byte) *JsonDoc {
+func NewJson(data []byte) (*JsonDoc, error) {
 	result := gjson.ParseBytes(data)
 
 	return &JsonDoc{
 		data: &result,
-	}
+	}, nil
 }
 
 func (d *JsonDoc) Value() interface{} {

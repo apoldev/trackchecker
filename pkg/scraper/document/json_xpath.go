@@ -2,7 +2,6 @@ package document
 
 import (
 	"bytes"
-
 	"github.com/antchfx/jsonquery"
 )
 
@@ -10,12 +9,16 @@ type JsonXpathDoc struct {
 	node *jsonquery.Node
 }
 
-func NewJsonXpath(data []byte) *JsonXpathDoc {
-	node, _ := jsonquery.Parse(bytes.NewReader(data))
+func NewJsonXpath(data []byte) (*JsonXpathDoc, error) {
+	node, err := jsonquery.Parse(bytes.NewReader(data))
+
+	if err != nil {
+		return nil, err
+	}
 
 	return &JsonXpathDoc{
 		node: node,
-	}
+	}, nil
 }
 
 func (d *JsonXpathDoc) Value() interface{} {

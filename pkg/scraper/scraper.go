@@ -2,6 +2,7 @@ package scraper
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"maps"
 	"net/http"
@@ -144,6 +145,8 @@ func (t *Task) parseDoc(doc document.Document, builder *ResultBuilder, field *Fi
 		query = t.Payload
 	}
 
+	fmt.Println("q", query, doc)
+
 	if field.Type == FieldTypeArray {
 		nodes := doc.FindAll(query)
 
@@ -182,16 +185,22 @@ func (t *Task) parseDoc(doc document.Document, builder *ResultBuilder, field *Fi
 }
 
 func (t *Task) selectDocType(data []byte, args *Args) error {
-	// replace to switch
 
-	if t.Params["type"] == JSON {
-		args.document = document.NewJson(data)
-	} else if t.Params["type"] == JSONXpath {
-		args.document = document.NewJsonXpath(data)
-	} else if t.Params["type"] == XPATH {
-		args.document = document.NewHtmlXpath(data)
-	} else if t.Params["type"] == HTML {
-		args.document = document.NewHtml(data)
+	var err error
+
+	switch t.Params["type"] {
+	case JSON:
+		args.document, err = document.NewJson(data)
+	case HTML:
+		args.document, err = document.NewHtml(data)
+	case XPATH:
+		args.document, err = document.NewHtmlXpath(data)
+	case JSONXpath:
+		args.document, err = document.NewJsonXpath(data)
+	}
+
+	if err != nil {
+		return err
 	}
 
 	if args.document == nil {

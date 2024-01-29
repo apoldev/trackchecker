@@ -12,12 +12,16 @@ type HtmlXpathDoc struct {
 	node *html.Node
 }
 
-func NewHtmlXpath(data []byte) *HtmlXpathDoc {
-	node, _ := htmlquery.Parse(bytes.NewReader(data))
+func NewHtmlXpath(data []byte) (*HtmlXpathDoc, error) {
+	node, err := htmlquery.Parse(bytes.NewReader(data))
+
+	if err != nil {
+		return nil, err
+	}
 
 	return &HtmlXpathDoc{
 		node: node,
-	}
+	}, nil
 }
 
 func (d *HtmlXpathDoc) Value() interface{} {
