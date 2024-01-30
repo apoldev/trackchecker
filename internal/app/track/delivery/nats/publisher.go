@@ -13,7 +13,12 @@ type TrackPublisher struct {
 	cfg    config.Nats
 }
 
-func NewTrackPublisher(nc *nats.Conn, js nats.JetStream, log logger.Logger, cfg config.Nats) *TrackPublisher {
+func NewTrackPublisher(
+	nc *nats.Conn,
+	js nats.JetStream,
+	log logger.Logger,
+	cfg config.Nats,
+) *TrackPublisher {
 	return &TrackPublisher{
 		nc:     nc,
 		js:     js,

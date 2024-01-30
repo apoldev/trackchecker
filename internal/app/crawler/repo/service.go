@@ -56,7 +56,7 @@ func (s *SpiderRepo) LoadSpiders(filename string) error {
 	return nil
 }
 
-// FindScrapersByTrackingNumber returns scrapers that match the tracking number.
+// FindSpidersByTrackingNumber returns scrapers that match the tracking number.
 func (s *SpiderRepo) FindSpidersByTrackingNumber(trackingNumber string) []*models.Spider {
 	spiders := make([]*models.Spider, 0)
 

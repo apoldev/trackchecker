@@ -25,7 +25,13 @@ type TrackConsumer struct {
 	tracking *usecase.Tracking
 }
 
-func NewTrackConsumer(nc *nats.Conn, js nats.JetStream, logger logger.Logger, cfg config.Nats, tracking *usecase.Tracking) *TrackConsumer {
+func NewTrackConsumer(
+	nc *nats.Conn,
+	js nats.JetStream,
+	logger logger.Logger,
+	cfg config.Nats,
+	tracking *usecase.Tracking,
+) *TrackConsumer {
 	return &TrackConsumer{
 		nc:       nc,
 		js:       js,
