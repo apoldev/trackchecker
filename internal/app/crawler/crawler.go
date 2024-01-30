@@ -1,8 +1,13 @@
 package crawler
 
 import (
+	"errors"
 	"github.com/apoldev/trackchecker/internal/app/models"
 	"github.com/apoldev/trackchecker/pkg/scraper"
+)
+
+var (
+	ErrNoSpiders = errors.New("no spiders")
 )
 
 // Crawler starts spiders for tracking packages and accumulate results.
@@ -22,6 +27,11 @@ func NewCrawler(track *models.TrackingNumber, spiders []*models.Spider) *Crawler
 
 // Start can starts spiders in
 func (c *Crawler) Start() error {
+
+	if len(c.spiders) == 0 {
+		return ErrNoSpiders
+	}
+
 	for i := range c.spiders {
 		args := scraper.NewArgs(scraper.Variables{
 			"[track]": c.trackingNumber.Code,

@@ -3,31 +3,46 @@ package usecase
 import (
 	"encoding/json"
 	"github.com/apoldev/trackchecker/internal/app/crawler"
-	"github.com/apoldev/trackchecker/internal/app/crawler/repo"
 	"github.com/apoldev/trackchecker/internal/app/models"
-	repo2 "github.com/apoldev/trackchecker/internal/app/track/repo"
 	"github.com/apoldev/trackchecker/pkg/logger"
 	"github.com/google/uuid"
 )
 
+// Publisher is an interface for publish message to queue.
+//
+//go:generate go run github.com/vektra/mockery/v2@v2.40.1 --name Publisher
 type Publisher interface {
 	Publish(message []byte) error
 }
 
 // TrackResultRepo is an interface for save and get tracking result.
+//
+//go:generate go run github.com/vektra/mockery/v2@v2.40.1 --name TrackResultRepo
 type TrackResultRepo interface {
 	Set(id string, b []byte) error
 	Get(id string) ([]byte, error)
 }
 
+// SpiderRepo is an interface for get spiders by tracking number.
+//
+//go:generate go run github.com/vektra/mockery/v2@v2.40.1 --name SpiderRepo
+type SpiderRepo interface {
+	FindSpidersByTrackingNumber(trackingNumber string) []*models.Spider
+}
+
 type Tracking struct {
 	publisher       Publisher
 	logger          logger.Logger
-	trackSpiderRepo *repo.SpiderRepo
+	trackSpiderRepo SpiderRepo
 	trackRepo       TrackResultRepo
 }
 
-func NewTracking(publisher Publisher, logger logger.Logger, trackSpiderRepo *repo.SpiderRepo, trackRepo *repo2.TrackRepo) *Tracking {
+func NewTracking(
+	publisher Publisher,
+	logger logger.Logger,
+	trackSpiderRepo SpiderRepo,
+	trackRepo TrackResultRepo,
+) *Tracking {
 	return &Tracking{
 		publisher:       publisher,
 		logger:          logger,
@@ -78,7 +93,7 @@ func (t *Tracking) Tracking(track *models.TrackingNumber) (map[string]models.Cra
 		return nil, err
 	}
 
-	t.logger.Debugf("got %s track results on %s", len(cr.GetResults()), track.UUID)
+	t.logger.Debugf("got %d track results on %s", len(cr.GetResults()), track.UUID)
 
 	return cr.GetResults(), nil
 }
