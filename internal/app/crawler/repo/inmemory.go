@@ -40,9 +40,11 @@ func (s *SpiderRepo) LoadSpiders(filename string) error {
 
 	for i := range spiders {
 		for j := range spiders[i].Masks {
-			res := strings.TrimPrefix(spiders[i].Masks[j], "^")
-			res = strings.TrimSuffix(res, "^")
-			re, err := regexp.Compile("^" + spiders[i].Masks[j] + "$")
+			var re *regexp.Regexp
+
+			regexpString := strings.Trim(spiders[i].Masks[j], "^$")
+			regexpString = strings.TrimSuffix(regexpString, "^")
+			re, err = regexp.Compile("^" + regexpString + "$")
 
 			if err != nil {
 				s.log.Warnf("spider regexp err: %s", err)

@@ -40,9 +40,9 @@ func (d *XMLXpathDoc) FindOne(expr string) (Document, error) {
 	navigator := xmlquery.CreateXPathNavigator(d.node)
 	itemNode := exp.Evaluate(navigator)
 
-	switch itemNode.(type) {
+	switch v := itemNode.(type) {
 	case *xpath.NodeIterator:
-		iterator := itemNode.(*xpath.NodeIterator)
+		iterator := v
 		iterator.MoveNext()
 		if v, ok := iterator.Current().(*xmlquery.NodeNavigator); ok {
 			return &XMLXpathDoc{
@@ -51,7 +51,7 @@ func (d *XMLXpathDoc) FindOne(expr string) (Document, error) {
 		}
 	case string:
 		return &StringDoc{
-			value: itemNode.(string),
+			value: v,
 		}, nil
 		// todo bool, float64
 	}

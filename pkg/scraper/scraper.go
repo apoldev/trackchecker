@@ -163,7 +163,7 @@ func (t *Task) parseDoc(doc document.Document, builder *ResultBuilder, field *Fi
 				builder.Set(newPath, node.Value())
 			} else if field.Element.Type == FieldTypeObject {
 				for j := range field.Element.Object {
-					t.parseDoc(node, builder, field.Element.Object[j], newPath+"."+field.Element.Object[j].Path)
+					_ = t.parseDoc(node, builder, field.Element.Object[j], newPath+"."+field.Element.Object[j].Path)
 				}
 			}
 		}
@@ -175,7 +175,7 @@ func (t *Task) parseDoc(doc document.Document, builder *ResultBuilder, field *Fi
 		}
 
 		for j := range field.Object {
-			t.parseDoc(node, builder, field.Object[j], path+"."+field.Object[j].Path)
+			_ = t.parseDoc(node, builder, field.Object[j], path+"."+field.Object[j].Path)
 		}
 	} else if field.Type == "" {
 		node, err = doc.FindOne(query)

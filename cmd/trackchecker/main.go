@@ -63,7 +63,7 @@ func main() {
 	natsConsumer := tracknats.NewTrackConsumer(nc, js, logger, cfg.Nats, trackingUC)
 
 	go func() {
-		err := natsConsumer.StartQueueReceiveMessages(cfg.Nats.Subject, cfg.Nats.DurableName) //nolint:govet
+		err = natsConsumer.StartQueueReceiveMessages(cfg.Nats.Subject, cfg.Nats.DurableName) //nolint:govet // cuz
 		if err != nil {
 			logger.Fatal(err)
 		}

@@ -111,8 +111,8 @@ func BenchmarkHtmlTest(b *testing.B) {
 	s1 := Scraper{}
 	s2 := Scraper{}
 
-	json.Unmarshal([]byte(xpath), &s1)
-	json.Unmarshal([]byte(html), &s2)
+	_ = json.Unmarshal([]byte(xpath), &s1)
+	_ = json.Unmarshal([]byte(html), &s2)
 
 	s1.Tasks[0].Type = "source"
 	s1.Tasks[0].Payload = data
@@ -125,7 +125,7 @@ func BenchmarkHtmlTest(b *testing.B) {
 			args := &Args{
 				ResultBuilder: NewResultBuilder(),
 			}
-			s1.Scrape(args)
+			_ = s1.Scrape(args)
 			args.ResultBuilder.GetString()
 		}
 	})
@@ -135,7 +135,7 @@ func BenchmarkHtmlTest(b *testing.B) {
 			args := &Args{
 				ResultBuilder: NewResultBuilder(),
 			}
-			s2.Scrape(args)
+			_ = s2.Scrape(args)
 			args.ResultBuilder.GetString()
 		}
 	})
@@ -150,8 +150,8 @@ func BenchmarkJsonDoc(b *testing.B) {
 	s1 := Scraper{}
 	s2 := Scraper{}
 
-	json.Unmarshal([]byte(xpath), &s1)
-	json.Unmarshal([]byte(gjson), &s2)
+	_ = json.Unmarshal([]byte(xpath), &s1)
+	_ = json.Unmarshal([]byte(gjson), &s2)
 
 	s1.Tasks[0].Type = "source"
 	s1.Tasks[0].Payload = data
