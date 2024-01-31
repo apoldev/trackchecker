@@ -3,11 +3,38 @@ version: "3.7"
 volumes:
   nats_storage:
 
+configs:
+  trackchecker_config:
+    external: true
+
 networks:
   traefik-public:
     external: true
 
 services:
+  app:
+    image: ghcr.io/apoldev/trackchecker:latest
+    container_name: trackchecker_app
+    configs:
+      - source: trackchecker_config
+        target: /app/config.yml
+    networks:
+      - traefik-public
+    environment:
+      CONFIG_FILE: 'config.yml'
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.trackchecker==true
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.network=traefik-public"
+        - "traefik.http.routers.trackchecker-http.service=trackchecker"
+        - "traefik.http.routers.trackchecker-http.rule=Host(`trackchecker.1trackapp.com`)"
+        - "traefik.http.routers.trackchecker-http.entrypoints=http"
+        - "traefik.http.services.trackchecker.loadbalancer.server.port=8080"
+
   redis:
     image: redis:7.2.4-alpine
     container_name: trackchecker_redis
