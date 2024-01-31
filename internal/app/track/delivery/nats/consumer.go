@@ -52,6 +52,7 @@ func (c *TrackConsumer) worker(ctx context.Context, i int, ch chan *nats.Msg) {
 
 			if err != nil {
 				c.logger.Warnf("worker err read message: %v", err)
+				msg.Ack()
 				continue
 			}
 

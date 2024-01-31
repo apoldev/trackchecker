@@ -1,12 +1,12 @@
 package http
 
 import (
-	"encoding/json"
 	"net/http"
+
+	"github.com/google/uuid"
 
 	"github.com/apoldev/trackchecker/internal/app/models"
 
-	"github.com/apoldev/trackchecker/internal/app/track/usecase"
 	"github.com/apoldev/trackchecker/pkg/logger"
 	"github.com/gin-gonic/gin"
 )
@@ -20,11 +20,11 @@ const (
 
 // QueuePublisher is an interface for publish tracking number to queue.
 type QueuePublisher interface {
-	PublishTrackingNumberToQueue(id string) (models.TrackingNumber, error)
+	PublishTrackingNumbersToQueue(id string, trackingNumbers []string) ([]models.TrackingNumber, error)
 }
 
 type TrackingResultGetter interface {
-	GetTrackingResult(id string) ([]byte, error)
+	GetTrackingResult(id string) ([]*models.Crawler, error)
 }
 
 type Tracking interface {
@@ -37,7 +37,7 @@ type TrackHandler struct {
 	tracking Tracking
 }
 
-func NewTrackHandler(log logger.Logger, tracking *usecase.Tracking) *TrackHandler {
+func NewTrackHandler(log logger.Logger, tracking Tracking) *TrackHandler {
 	return &TrackHandler{
 		logger:   log,
 		tracking: tracking,
@@ -45,14 +45,14 @@ func NewTrackHandler(log logger.Logger, tracking *usecase.Tracking) *TrackHandle
 }
 
 type ResponseTrackingResult struct {
-	Status bool            `json:"status"`
-	Error  string          `json:"error,omitempty"`
-	Data   json.RawMessage `json:"data,omitempty"`
+	Status bool              `json:"status"`
+	Error  string            `json:"error,omitempty"`
+	Data   []*models.Crawler `json:"data,omitempty"`
 }
 
 func (h *TrackHandler) GetTrackingNumberResultHandler(c *gin.Context) {
 	var err error
-	var data []byte
+	var data []*models.Crawler
 
 	id := c.Query("id")
 	if id == "" {
@@ -61,7 +61,7 @@ func (h *TrackHandler) GetTrackingNumberResultHandler(c *gin.Context) {
 	}
 
 	data, err = h.tracking.GetTrackingResult(id)
-	if err != nil {
+	if err != nil || data == nil {
 		c.JSON(http.StatusNotFound, ResponseTrackingResult{
 			Error: ErrorNotFound,
 		})
@@ -75,11 +75,15 @@ func (h *TrackHandler) GetTrackingNumberResultHandler(c *gin.Context) {
 }
 
 type RequestCrawler struct {
-	TrackingNumber string `json:"tracking_number"`
+	TrackingNumbers []string `json:"tracking_numbers"`
 }
 
+type ResponseTrackingNumber struct {
+	TrackingNumber string `json:"tracking_number"`
+}
 type ResponseCrawler struct {
-	models.TrackingNumber
+	TrackingID      string                  `json:"tracking_id"`
+	TrackingNumbers []models.TrackingNumber `json:"tracking_numbers"`
 }
 
 func (h *TrackHandler) TrackingNumberCrawlerHandler(c *gin.Context) {
@@ -91,13 +95,22 @@ func (h *TrackHandler) TrackingNumberCrawlerHandler(c *gin.Context) {
 		return
 	}
 
-	track, err := h.tracking.PublishTrackingNumberToQueue(req.TrackingNumber)
+	trackingID := uuid.NewString()
+	tracks, err := h.tracking.PublishTrackingNumbersToQueue(trackingID, req.TrackingNumbers)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, ErrorPublishToQueue)
 		return
 	}
 
-	c.JSON(http.StatusCreated, ResponseCrawler{
-		track,
-	})
+	resp := ResponseCrawler{
+		TrackingID: trackingID,
+	}
+	for i := range tracks {
+		resp.TrackingNumbers = append(resp.TrackingNumbers, models.TrackingNumber{
+			Code: tracks[i].Code,
+			UUID: tracks[i].UUID,
+		})
+	}
+
+	c.JSON(http.StatusCreated, resp)
 }

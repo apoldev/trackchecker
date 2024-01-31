@@ -2,6 +2,7 @@ package document
 
 import (
 	"bytes"
+
 	"github.com/antchfx/jsonquery"
 )
 

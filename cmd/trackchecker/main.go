@@ -1,7 +1,11 @@
 package main
 
 import (
+	"net/http"
+	"os"
+
 	"github.com/apoldev/trackchecker/internal/app/config"
+	usecase2 "github.com/apoldev/trackchecker/internal/app/crawler"
 	repo2 "github.com/apoldev/trackchecker/internal/app/crawler/repo"
 	trackhttp "github.com/apoldev/trackchecker/internal/app/track/delivery/http"
 	tracknats "github.com/apoldev/trackchecker/internal/app/track/delivery/nats"
@@ -12,11 +16,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/nats-io/nats.go"
 	"github.com/sirupsen/logrus"
-	"os"
 )
 
 func main() {
 	logger := logrus.New()
+	logger.SetFormatter(&logrus.TextFormatter{})
+	logger.SetLevel(logrus.DebugLevel)
 
 	cfg, err := config.LoadConfig(os.Getenv("CONFIG_FILE"))
 	if err != nil {
@@ -49,12 +54,13 @@ func main() {
 	logger.Infof("Loaded %d spiders", len(repoSpider.Spiders))
 
 	natsPublisher := tracknats.NewTrackPublisher(nc, js, logger, cfg.Nats)
-
 	trackRepo := repo.NewTrackRepo(redisClient, logger)
-	tracking := usecase.NewTracking(natsPublisher, logger, repoSpider, trackRepo)
-	trackHandler := trackhttp.NewTrackHandler(logger, tracking)
 
-	natsConsumer := tracknats.NewTrackConsumer(nc, js, logger, cfg.Nats, tracking)
+	httpClient := http.DefaultClient
+	crawlerManager := usecase2.NewCrawlerManager(repoSpider, logger, httpClient)
+	trackingUC := usecase.NewTracking(natsPublisher, logger, crawlerManager, trackRepo)
+	trackHandler := trackhttp.NewTrackHandler(logger, trackingUC)
+	natsConsumer := tracknats.NewTrackConsumer(nc, js, logger, cfg.Nats, trackingUC)
 
 	go func() {
 		err := natsConsumer.StartQueueReceiveMessages(cfg.Nats.Subject, cfg.Nats.DurableName) //nolint:govet

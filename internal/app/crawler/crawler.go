@@ -2,59 +2,141 @@ package crawler
 
 import (
 	"errors"
+	"net/http"
+	"sync"
+
 	"github.com/apoldev/trackchecker/internal/app/models"
+	"github.com/apoldev/trackchecker/pkg/logger"
 	"github.com/apoldev/trackchecker/pkg/scraper"
 )
 
-var (
-	ErrNoSpiders = errors.New("no spiders")
+const (
+	StatusFinish    = "finish"
+	StatusRunning   = "running"
+	StatusNoSpiders = "no_spiders"
 )
 
-// Crawler starts spiders for tracking packages and accumulate results.
-type Crawler struct {
-	trackingNumber *models.TrackingNumber
-	spiders        []*models.Spider
-	results        map[string]models.CrawlerResult
+var (
+	ErrTrackIsNil = errors.New("tracking number is nil")
+)
+
+type SpiderRepo interface {
+	FindSpidersByTrackingNumber(trackingNumber string) []*models.Spider
 }
 
-func NewCrawler(track *models.TrackingNumber, spiders []*models.Spider) *Crawler {
-	return &Crawler{
-		spiders:        spiders,
-		trackingNumber: track,
-		results:        make(map[string]models.CrawlerResult),
+type crawlerTask struct {
+	spider         *models.Spider
+	trackingNumber string
+}
+
+// Manager creates Crawler instances for starts spiders.
+type Manager struct {
+	SpiderRepo SpiderRepo
+	logger     logger.Logger
+	client     *http.Client
+}
+
+func NewCrawlerManager(repo SpiderRepo, log logger.Logger, client *http.Client) *Manager {
+	return &Manager{
+		SpiderRepo: repo,
+		logger:     log,
+		client:     client,
 	}
 }
 
-// Start can starts spiders in
-func (c *Crawler) Start() error {
-
-	if len(c.spiders) == 0 {
-		return ErrNoSpiders
+// Start can start spiders in parallel and wait for all spiders to finish.
+// For each spider we have to create new args for scraper with tracking number
+// for replace in url or body or headers, etc...
+//
+// After scraping, we can get result from scraper and save it to results.
+// If we have error, we can save it to results too.
+//
+// One spider can find another tracking number in result and start new spider for this tracking number.
+func (c *Manager) Start(track *models.TrackingNumber) (*models.Crawler, error) {
+	if track == nil {
+		return nil, ErrTrackIsNil
 	}
 
-	for i := range c.spiders {
-		args := scraper.NewArgs(scraper.Variables{
-			"[track]": c.trackingNumber.Code,
-		}, nil)
+	crawler := models.Crawler{
+		TrackingNumber: *track,
+		Results:        make([]models.CrawlerResult, 0),
+		Status:         StatusRunning,
+	}
+	spiders := c.SpiderRepo.FindSpidersByTrackingNumber(track.Code)
+	if len(spiders) == 0 {
+		crawler.Status = StatusNoSpiders
+		return &crawler, nil
+	}
+	wg := sync.WaitGroup{}
+	chTasks := make(chan crawlerTask)
+	resultMutex := sync.Mutex{}
+	mu := sync.Mutex{}
+	usedSpidersWithTrackingNumber := make(map[string]struct{})
 
-		err := c.spiders[i].Scrape(args)
-
-		if err != nil {
-			c.results[c.spiders[i].Code] = models.CrawlerResult{
-				Err: err.Error(),
+	wg.Add(len(spiders))
+	go func() {
+		for i := range spiders {
+			chTasks <- crawlerTask{
+				spider:         spiders[i],
+				trackingNumber: track.Code,
 			}
-			continue
 		}
+	}()
 
-		c.results[c.spiders[i].Code] = models.CrawlerResult{
-			Result:      args.ResultBuilder.GetData(),
-			ExecuteTime: args.ExecuteTime.Seconds(),
+	go func() {
+		for task := range chTasks {
+			go c.runCrawlerTask(&crawler, task, &wg, &resultMutex, &mu, usedSpidersWithTrackingNumber)
 		}
-	}
+	}()
 
-	return nil
+	wg.Wait()
+	close(chTasks)
+	crawler.Status = StatusFinish
+	return &crawler, nil
 }
 
-func (c *Crawler) GetResults() map[string]models.CrawlerResult {
-	return c.results
+func (c *Manager) runCrawlerTask(
+	crawler *models.Crawler,
+	task crawlerTask,
+	wg *sync.WaitGroup,
+	resultMutex *sync.Mutex,
+	mu *sync.Mutex,
+	usedSpidersWithTrackingNumber map[string]struct{},
+) {
+	defer wg.Done()
+	taskKey := task.trackingNumber + ":" + task.spider.Code
+	mu.Lock()
+	if _, ok := usedSpidersWithTrackingNumber[taskKey]; ok {
+		defer mu.Unlock()
+		return
+	}
+	usedSpidersWithTrackingNumber[taskKey] = struct{}{}
+	mu.Unlock()
+
+	var result models.CrawlerResult
+	args := scraper.NewArgs(scraper.Variables{
+		"[track]": task.trackingNumber,
+	}, nil)
+
+	// Start Scrape
+	err := task.spider.Scrape(args)
+	if err != nil {
+		result = models.CrawlerResult{
+			Spider:         task.spider.Code,
+			TrackingNumber: task.trackingNumber,
+			Err:            err.Error(),
+			ExecuteTime:    args.ExecuteTime.Seconds(),
+		}
+	} else {
+		result = models.CrawlerResult{
+			Spider:         task.spider.Code,
+			TrackingNumber: task.trackingNumber,
+			ExecuteTime:    args.ExecuteTime.Seconds(),
+			Result:         args.ResultBuilder.GetData(),
+		}
+	}
+	// todo add new task if exist new tracking number or countryTo
+	resultMutex.Lock()
+	defer resultMutex.Unlock()
+	crawler.Results = append(crawler.Results, result)
 }

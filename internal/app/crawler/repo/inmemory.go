@@ -10,6 +10,8 @@ import (
 	"github.com/apoldev/trackchecker/pkg/logger"
 )
 
+// SpiderRepo is a repository for spiders.
+// can be loaded from local file.
 type SpiderRepo struct {
 	Spiders []models.Spider
 	log     logger.Logger
