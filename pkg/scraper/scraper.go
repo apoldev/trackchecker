@@ -60,7 +60,6 @@ type Task struct {
 }
 
 func (t *Task) Process(args *Args) error {
-
 	switch t.Type {
 	case TaskTypeSource:
 		return t.Source(args)
@@ -187,7 +186,6 @@ func (t *Task) parseDoc(doc document.Document, builder *ResultBuilder, field *Fi
 }
 
 func (t *Task) selectDocType(data []byte, args *Args) error {
-
 	var err error
 
 	switch t.Params["type"] {

@@ -2,8 +2,8 @@ package document
 
 import (
 	"bytes"
-	"github.com/antchfx/xmlquery"
 
+	"github.com/antchfx/xmlquery"
 	"github.com/antchfx/xpath"
 )
 
