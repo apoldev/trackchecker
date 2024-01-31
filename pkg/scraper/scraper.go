@@ -45,6 +45,7 @@ func (s *Scraper) Scrape(args *Args) error {
 	for i := range s.Tasks {
 		err := s.Tasks[i].Process(args)
 		if err != nil {
+			// todo analyse err
 			return err
 		}
 	}
@@ -135,6 +136,9 @@ func (t *Task) Request(args *Args) error {
 
 // Query parses document with xpath or jsonpath or css selector.
 func (t *Task) Query(args *Args) error {
+	if args.document == nil {
+		return ErrorDocumentIsNil
+	}
 	return t.parseDoc(args.document, args.ResultBuilder, &t.Field, t.Field.Path)
 }
 
