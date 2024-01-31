@@ -1,0 +1,151 @@
+swagger: "2.0"
+
+consumes:
+  - application/json
+produces:
+  - application/json
+info:
+  version: "1.0.0"
+  contact:
+    email: sozdaibk@gmail.com
+    name: Aleksei Poliakov
+    url: https://apoldev.t.me/
+  description: This is a server for tracking parcels
+  title: TrackChecker App
+
+host: localhost:7777
+basePath: /
+schemes:
+  - http
+
+paths:
+  /track:
+    get:
+      operationId: getResults
+      description: get tracking numbers results
+      parameters:
+        - description: Tracking ID
+          in: query
+          name: id
+          required: true
+          type: string
+      responses:
+        "200":
+          description: tracking result is found
+          schema:
+            $ref: '#/definitions/trackingResult'
+        default:
+          description: error
+          schema:
+            $ref: "#/definitions/error"
+      summary: Tracking
+
+    post:
+      consumes:
+        - application/json
+      description: Create tracking request with some tracking numbers
+      parameters:
+        - description: Request body
+          in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/trackRequest'
+      responses:
+        "201":
+          description: OK
+          schema:
+            $ref: '#/definitions/requestResult'
+        default:
+          description: error
+          schema:
+            $ref: "#/definitions/error"
+      summary: Tracking
+
+definitions:
+  error:
+    type: object
+    required:
+      - message
+    properties:
+      code:
+        type: integer
+        format: int64
+      message:
+        type: string
+  trackingNumber:
+    properties:
+      uuid:
+        type: string
+      code:
+        type: string
+    type: object
+  requestResult:
+    properties:
+      tracking_numbers:
+        items:
+          $ref: '#/definitions/trackingNumber'
+        type: array
+      tracking_id:
+        type: string
+    type: object
+  trackRequest:
+    required:
+      - tracking_numbers
+    properties:
+      tracking_numbers:
+        items:
+          type: string
+        type: array
+
+    type: object
+  trackingResult:
+    properties:
+      status:
+        type: boolean
+      error:
+        type: string
+      data:
+        items:
+          $ref: '#/definitions/result'
+        type: array
+    type: object
+  result:
+    properties:
+      id:
+        type: string
+      uuid:
+        type: string
+      code:
+        type: string
+      status:
+        type: string
+      results:
+        items:
+          $ref: '#/definitions/spiderResults'
+        type: array
+    type: object
+  spiderResults:
+    properties:
+      spider:
+        example: "usps"
+        type: string
+      tracking_number:
+        example: "1234567890"
+        type: string
+      error:
+        example: error message
+        type: string
+      execute_time:
+        example: "1.234"
+        type: number
+      result:
+        example:
+          CountryTo: "US"
+          CountryFrom: "RU"
+          events:
+            - status: "In Transit"
+              date: "2021-01-01T00:00:00Z"
+              place: "New York"
+        type: object
+    type: object
