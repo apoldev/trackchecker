@@ -1,6 +1,7 @@
 package scraper
 
 import (
+	"context"
 	"errors"
 	"io"
 	"maps"
@@ -13,9 +14,10 @@ import (
 )
 
 const (
-	TaskTypeSource  = "source"
-	TaskTypeRequest = "request"
-	TaskTypeQuery   = "query"
+	TaskTypeSource        = "source"
+	TaskTypeRequest       = "request"
+	TaskTypeQuery         = "query"
+	DefaultRequestTimeout = 10 * time.Second
 )
 
 var (
@@ -58,7 +60,6 @@ type Task struct {
 }
 
 func (t *Task) Process(args *Args) error {
-	t.Payload = args.variables.ReplaceStringFromVariables(t.Payload)
 
 	switch t.Type {
 	case TaskTypeSource:
@@ -103,7 +104,11 @@ func (t *Task) Request(args *Args) error {
 		}
 	}
 
-	req, err := http.NewRequest(method, t.Payload, body)
+	link := args.variables.ReplaceStringFromVariables(t.Payload)
+
+	ctx, cancel := context.WithTimeout(context.Background(), DefaultRequestTimeout)
+	defer cancel()
+	req, err := http.NewRequestWithContext(ctx, method, link, body)
 
 	if err != nil {
 		return err
@@ -194,6 +199,8 @@ func (t *Task) selectDocType(data []byte, args *Args) error {
 		args.document, err = document.NewHtmlXpath(data)
 	case JSONXpath:
 		args.document, err = document.NewJsonXpath(data)
+	case XML:
+		args.document, err = document.NewXMLXpath(data)
 	}
 
 	if err != nil {
