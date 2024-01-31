@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"encoding/json"
-	"github.com/apoldev/trackchecker/internal/app/crawler"
 	"github.com/apoldev/trackchecker/internal/app/models"
 	"github.com/apoldev/trackchecker/pkg/logger"
 	"github.com/google/uuid"
@@ -19,81 +18,81 @@ type Publisher interface {
 //
 //go:generate go run github.com/vektra/mockery/v2@v2.40.1 --name TrackResultRepo
 type TrackResultRepo interface {
-	Set(id string, b []byte) error
-	Get(id string) ([]byte, error)
+	Set(track *models.TrackingNumber, crawler *models.Crawler) error
+	Get(requestID string) ([]*models.Crawler, error)
 }
 
-// SpiderRepo is an interface for get spiders by tracking number.
+// Crawler is an interface for start crawler.
 //
-//go:generate go run github.com/vektra/mockery/v2@v2.40.1 --name SpiderRepo
-type SpiderRepo interface {
-	FindSpidersByTrackingNumber(trackingNumber string) []*models.Spider
+//go:generate go run github.com/vektra/mockery/v2@v2.40.1 --name Crawler
+type Crawler interface {
+	Start(number *models.TrackingNumber) (*models.Crawler, error)
 }
 
 type Tracking struct {
-	publisher       Publisher
-	logger          logger.Logger
-	trackSpiderRepo SpiderRepo
-	trackRepo       TrackResultRepo
+	publisher Publisher
+	logger    logger.Logger
+	crawler   Crawler
+	trackRepo TrackResultRepo
 }
 
 func NewTracking(
 	publisher Publisher,
 	logger logger.Logger,
-	trackSpiderRepo SpiderRepo,
+	crawler Crawler,
 	trackRepo TrackResultRepo,
 ) *Tracking {
 	return &Tracking{
-		publisher:       publisher,
-		logger:          logger,
-		trackSpiderRepo: trackSpiderRepo,
-		trackRepo:       trackRepo,
+		publisher: publisher,
+		logger:    logger,
+		crawler:   crawler,
+		trackRepo: trackRepo,
 	}
 }
 
-func (t *Tracking) PublishTrackingNumberToQueue(trackingNumber string) (models.TrackingNumber, error) {
-	track := models.TrackingNumber{
-		Code: trackingNumber,
-		UUID: uuid.NewString(),
+func (t *Tracking) PublishTrackingNumbersToQueue(id string, trackingNumbers []string) ([]models.TrackingNumber, error) {
+	tracks := make([]models.TrackingNumber, 0, len(trackingNumbers))
+	for i := range trackingNumbers {
+		track := models.TrackingNumber{
+			Code:      trackingNumbers[i],
+			UUID:      uuid.NewString(),
+			RequestID: id,
+		}
+
+		b, err := json.Marshal(&track)
+		if err != nil {
+			t.logger.Warnf("error marshal tracking number: %v", err)
+			continue
+		}
+		err = t.publisher.Publish(b)
+		if err != nil {
+			t.logger.Warnf("error publish tracking number to queue: %v", err)
+			return nil, err
+		}
+
+		tracks = append(tracks, track)
 	}
 
-	b, err := json.Marshal(&track)
-	if err != nil {
-		return models.TrackingNumber{}, err
-	}
-
-	err = t.publisher.Publish(b)
-	if err != nil {
-		return models.TrackingNumber{}, err
-	}
-
-	return track, nil
+	return tracks, nil
 }
 
-func (t *Tracking) GetTrackingResult(id string) ([]byte, error) {
-	return t.trackRepo.Get(id)
+func (t *Tracking) GetTrackingResult(requestID string) ([]*models.Crawler, error) {
+	return t.trackRepo.Get(requestID)
 }
 
-func (t *Tracking) SaveTrackingResult(track *models.TrackingNumber, results map[string]models.CrawlerResult) error {
-	b, err := json.Marshal(results)
-	if err != nil {
-		return err
-	}
-
-	return t.trackRepo.Set(track.UUID, b)
+func (t *Tracking) SaveTrackingResult(track *models.TrackingNumber, results *models.Crawler) error {
+	return t.trackRepo.Set(track, results)
 }
 
-func (t *Tracking) Tracking(track *models.TrackingNumber) (map[string]models.CrawlerResult, error) {
-	spiders := t.trackSpiderRepo.FindSpidersByTrackingNumber(track.Code)
-
-	cr := crawler.NewCrawler(track, spiders)
-	err := cr.Start()
+// Tracking selected spiders for tracking number and starts Crawler.
+func (t *Tracking) Tracking(track *models.TrackingNumber) (*models.Crawler, error) {
+	crawler, err := t.crawler.Start(track)
 	if err != nil {
 		t.logger.Warnf("crawler err: %v", err)
 		return nil, err
 	}
 
-	t.logger.Debugf("got %d track results on %s", len(cr.GetResults()), track.UUID)
+	t.logger.Debugf("got %d track results on %s", len(crawler.Results), track.UUID)
 
-	return cr.GetResults(), nil
+	return crawler, nil
 }

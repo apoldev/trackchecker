@@ -6,7 +6,6 @@ import (
 	"github.com/apoldev/trackchecker/internal/app/models"
 	"github.com/apoldev/trackchecker/internal/app/track/usecase"
 	"github.com/apoldev/trackchecker/internal/app/track/usecase/mocks"
-	"github.com/apoldev/trackchecker/pkg/scraper"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/mock"
@@ -17,36 +16,26 @@ import (
 func TestTracking_Tracking(t *testing.T) {
 	cases := []struct {
 		name           string
-		trackingNumber string
-		spiders        []*models.Spider
-		results        map[string]models.CrawlerResult
+		trackingNumber *models.TrackingNumber
+		results        *models.Crawler
 		expectError    error
 	}{
 		{
-			name:           "valid data",
-			trackingNumber: "111",
-			spiders: []*models.Spider{
-				{
-					Scraper: scraper.Scraper{
-						Code: "code",
-					},
-				},
+			name: "valid data",
+			trackingNumber: &models.TrackingNumber{
+				Code: "111",
 			},
-
-			results: map[string]models.CrawlerResult{
-				"code": {
-					Result: []byte(`{}`),
-				},
+			results: &models.Crawler{
+				Results: make([]models.CrawlerResult, 0),
 			},
 			expectError: nil,
 		},
 
 		{
-			name:           "empty spiders",
-			trackingNumber: "111",
-			spiders:        nil,
+			name:           "nil track",
+			trackingNumber: nil,
 			results:        nil,
-			expectError:    crawler.ErrNoSpiders,
+			expectError:    crawler.ErrTrackIsNil,
 		},
 	}
 
@@ -57,26 +46,22 @@ func TestTracking_Tracking(t *testing.T) {
 
 			publisherMock := mocks.NewPublisher(t)
 			trackResultMock := mocks.NewTrackResultRepo(t)
-			spiderMock := mocks.NewSpiderRepo(t)
+			crawlerMock := mocks.NewCrawler(t)
 			logger := logrus.New()
 
-			tracking := usecase.NewTracking(publisherMock, logger, spiderMock, trackResultMock)
+			tracking := usecase.NewTracking(publisherMock, logger, crawlerMock, trackResultMock)
 
-			track := &models.TrackingNumber{
-				Code: c.trackingNumber,
-			}
-
-			spiderMock.On("FindSpidersByTrackingNumber", c.trackingNumber).
-				Return(c.spiders).
+			crawlerMock.On("Start", c.trackingNumber).
+				Return(c.results, c.expectError).
 				Once()
 
-			result, err := tracking.Tracking(track)
+			result, err := tracking.Tracking(c.trackingNumber)
 
 			if c.expectError != nil {
 				require.Empty(t, result)
 				require.EqualError(t, err, c.expectError.Error())
 			} else {
-				require.Len(t, result, len(c.results))
+				require.Equal(t, result, c.results)
 				require.NoError(t, err)
 			}
 
@@ -87,23 +72,23 @@ func TestTracking_Tracking(t *testing.T) {
 
 func TestTracking_GetTrackingResult(t *testing.T) {
 	cases := []struct {
-		name        string
-		id          string
-		expectError error
-		expectBytes []byte
+		name         string
+		id           string
+		expectError  error
+		expectResult []*models.Crawler
 	}{
 		{
-			name:        "valid data",
-			id:          "111",
-			expectError: nil,
-			expectBytes: []byte(`{"data": "ok"}`),
+			name:         "valid data",
+			id:           "111",
+			expectError:  nil,
+			expectResult: []*models.Crawler{},
 		},
 
 		{
-			name:        "Error",
-			id:          "111",
-			expectError: errors.New("my error"),
-			expectBytes: nil,
+			name:         "Error",
+			id:           "111",
+			expectError:  errors.New("my error"),
+			expectResult: nil,
 		},
 	}
 
@@ -115,14 +100,14 @@ func TestTracking_GetTrackingResult(t *testing.T) {
 
 			publisherMock := mocks.NewPublisher(t)
 			trackResultMock := mocks.NewTrackResultRepo(t)
-			spiderMock := mocks.NewSpiderRepo(t)
+			crawlerMock := mocks.NewCrawler(t)
 			logger := logrus.New()
 
-			tracking := usecase.NewTracking(publisherMock, logger, spiderMock, trackResultMock)
+			tracking := usecase.NewTracking(publisherMock, logger, crawlerMock, trackResultMock)
 
 			trackResultMock.
 				On("Get", c.id).
-				Return(c.expectBytes, c.expectError).
+				Return(c.expectResult, c.expectError).
 				Once()
 
 			data, err := tracking.GetTrackingResult(c.id)
@@ -131,7 +116,7 @@ func TestTracking_GetTrackingResult(t *testing.T) {
 				require.EqualError(t, err, c.expectError.Error())
 				require.Empty(t, data)
 			} else {
-				require.Equal(t, c.expectBytes, data)
+				require.Equal(t, c.expectResult, data)
 			}
 		})
 	}
@@ -142,24 +127,20 @@ func TestTracking_SaveTrackingResult(t *testing.T) {
 	cases := []struct {
 		name           string
 		trackingNumber string
-		results        map[string]models.CrawlerResult
+		results        *models.Crawler
 		expectError    error
 	}{
 		{
 			name:           "valid data",
 			trackingNumber: "111",
-			results: map[string]models.CrawlerResult{
-				"spider1": models.CrawlerResult{},
-			},
-			expectError: nil,
+			results:        &models.Crawler{},
+			expectError:    nil,
 		},
 		{
 			name:           "error",
 			trackingNumber: "111",
-			results: map[string]models.CrawlerResult{
-				"spider1": models.CrawlerResult{},
-			},
-			expectError: errors.New("error"),
+			results:        &models.Crawler{},
+			expectError:    errors.New("error"),
 		},
 
 		{
@@ -178,10 +159,10 @@ func TestTracking_SaveTrackingResult(t *testing.T) {
 
 			publisherMock := mocks.NewPublisher(t)
 			trackResultMock := mocks.NewTrackResultRepo(t)
-			spiderMock := mocks.NewSpiderRepo(t)
+			crawlerMock := mocks.NewCrawler(t)
 			logger := logrus.New()
 
-			tracking := usecase.NewTracking(publisherMock, logger, spiderMock, trackResultMock)
+			tracking := usecase.NewTracking(publisherMock, logger, crawlerMock, trackResultMock)
 
 			track := &models.TrackingNumber{
 				Code: c.trackingNumber,
@@ -189,7 +170,7 @@ func TestTracking_SaveTrackingResult(t *testing.T) {
 			}
 
 			trackResultMock.
-				On("Set", track.UUID, mock.Anything).
+				On("Set", track, c.results).
 				Return(c.expectError).
 				Once()
 
@@ -208,15 +189,20 @@ func TestTracking_SaveTrackingResult(t *testing.T) {
 func TestTracking_PublishTrackingNumberToQueue(t *testing.T) {
 	publisherMock := mocks.NewPublisher(t)
 	trackResultMock := mocks.NewTrackResultRepo(t)
-	spiderMock := mocks.NewSpiderRepo(t)
+	crawlerMock := mocks.NewCrawler(t)
 	logger := logrus.New()
-	tracking := usecase.NewTracking(publisherMock, logger, spiderMock, trackResultMock)
+	tracking := usecase.NewTracking(publisherMock, logger, crawlerMock, trackResultMock)
 
 	expextError := "error publish tracking number to queue"
+
+	reqID := uuid.NewString()
 	trackingNumber := "111"
-	track := models.TrackingNumber{
-		Code: trackingNumber,
-		UUID: uuid.NewString(),
+	tracks := []models.TrackingNumber{
+		models.TrackingNumber{
+			RequestID: reqID,
+			Code:      trackingNumber,
+			UUID:      uuid.NewString(),
+		},
 	}
 
 	publisherMock.
@@ -224,11 +210,13 @@ func TestTracking_PublishTrackingNumberToQueue(t *testing.T) {
 		Return(nil).
 		Once()
 
-	res, err := tracking.PublishTrackingNumberToQueue(trackingNumber)
+	res, err := tracking.PublishTrackingNumbersToQueue(reqID, []string{trackingNumber})
 
 	require.NoError(t, err)
-	require.Equal(t, track.Code, res.Code)
-	require.Len(t, track.UUID, 36)
+	require.Len(t, tracks, 1)
+	require.Equal(t, tracks[0].Code, res[0].Code)
+	require.Equal(t, tracks[0].RequestID, res[0].RequestID)
+	require.Len(t, tracks[0].UUID, 36)
 
 	// test error
 	publisherMock.
@@ -236,9 +224,9 @@ func TestTracking_PublishTrackingNumberToQueue(t *testing.T) {
 		Return(errors.New(expextError)).
 		Once()
 
-	res, err = tracking.PublishTrackingNumberToQueue(trackingNumber)
+	res, err = tracking.PublishTrackingNumbersToQueue(reqID, []string{trackingNumber})
 
 	require.EqualError(t, err, expextError)
-	require.Equal(t, models.TrackingNumber{}, res)
+	require.Empty(t, res)
 
 }
