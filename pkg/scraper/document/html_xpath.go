@@ -49,10 +49,10 @@ func (d *HtmlXpathDoc) FindOne(expr string) (Document, error) {
 
 	itemNode := exp.Evaluate(navigator)
 
-	switch itemNode.(type) {
+	switch v := itemNode.(type) {
 	case *xpath.NodeIterator:
 
-		iterator := itemNode.(*xpath.NodeIterator)
+		iterator := v
 		iterator.MoveNext()
 
 		if v, ok := iterator.Current().(*htmlquery.NodeNavigator); ok {
@@ -64,7 +64,7 @@ func (d *HtmlXpathDoc) FindOne(expr string) (Document, error) {
 	case string:
 
 		return &StringDoc{
-			value: itemNode.(string),
+			value: v,
 		}, nil
 
 		// todo bool, float64

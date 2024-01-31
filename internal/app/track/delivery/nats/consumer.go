@@ -52,7 +52,7 @@ func (c *TrackConsumer) worker(ctx context.Context, i int, ch chan *nats.Msg) {
 
 			if err != nil {
 				c.logger.Warnf("worker err read message: %v", err)
-				msg.Ack()
+				_ = msg.Ack()
 				continue
 			}
 
@@ -68,7 +68,7 @@ func (c *TrackConsumer) worker(ctx context.Context, i int, ch chan *nats.Msg) {
 				continue
 			}
 
-			msg.Ack()
+			_ = msg.Ack()
 
 		case <-ctx.Done():
 			return
@@ -103,5 +103,5 @@ func (c *TrackConsumer) StartQueueReceiveMessages(subject, durable string) error
 		}
 	}
 
-	return nil
+	return nil //nolint:govet // cuz todo
 }

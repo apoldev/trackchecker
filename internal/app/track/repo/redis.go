@@ -54,7 +54,7 @@ func (r *TrackRepo) Get(requestID string) ([]*models.Crawler, error) {
 	results := make([]*models.Crawler, 0, len(m))
 	for _, v := range m {
 		result := &models.Crawler{}
-		err := json.Unmarshal([]byte(v), result)
+		err = json.Unmarshal([]byte(v), result)
 		if err != nil {
 			return nil, err
 		}

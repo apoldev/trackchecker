@@ -1,0 +1,57 @@
+version: "3.7"
+
+volumes:
+  nats_storage:
+
+configs:
+  trackchecker_config:
+    external: true
+
+networks:
+  traefik-public:
+    external: true
+
+services:
+  app:
+    image: ghcr.io/apoldev/trackchecker:latest
+    container_name: trackchecker_app
+    configs:
+      - source: trackchecker_config
+        target: /app/config.yml
+    networks:
+      - traefik-public
+    environment:
+      CONFIG_FILE: 'config.yml'
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.trackchecker==true
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.network=traefik-public"
+        - "traefik.http.routers.trackchecker-http.service=trackchecker"
+        - "traefik.http.routers.trackchecker-http.rule=Host(`trackchecker.1trackapp.com`)"
+        - "traefik.http.routers.trackchecker-http.entrypoints=http"
+        - "traefik.http.services.trackchecker.loadbalancer.server.port=8080"
+
+  redis:
+    image: redis:7.2.4-alpine
+    container_name: trackchecker_redis
+    networks:
+      - traefik-public
+  nats:
+    image: nats:2.10.9-alpine3.19
+    container_name: trackchecker_nats
+    networks:
+      - traefik-public
+    command: nats-server -js --config /etc/nats/nats-server.conf
+    healthcheck:
+      test: echo $$(wget --server-response http://localhost:8222/varz 2>&1 | grep  '200 OK') | grep '200'  || exit 1
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    volumes:
+      - ./configs/nats-server.conf:/etc/nats/nats-server.conf
+      - nats_storage:/nats/storage
