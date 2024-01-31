@@ -1,8 +1,11 @@
 package main
 
 import (
+	"context"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/apoldev/trackchecker/internal/app/config"
 	usecase2 "github.com/apoldev/trackchecker/internal/app/crawler"
@@ -11,9 +14,9 @@ import (
 	tracknats "github.com/apoldev/trackchecker/internal/app/track/delivery/nats"
 	"github.com/apoldev/trackchecker/internal/app/track/repo"
 	"github.com/apoldev/trackchecker/internal/app/track/usecase"
+	"github.com/apoldev/trackchecker/internal/pkg/httpserver"
 	nats2 "github.com/apoldev/trackchecker/internal/pkg/nats"
 	redis2 "github.com/apoldev/trackchecker/internal/pkg/redis"
-	"github.com/gin-gonic/gin"
 	"github.com/nats-io/nats.go"
 	"github.com/sirupsen/logrus"
 )
@@ -22,6 +25,8 @@ func main() {
 	logger := logrus.New()
 	logger.SetFormatter(&logrus.TextFormatter{})
 	logger.SetLevel(logrus.DebugLevel)
+
+	_, cancel := context.WithCancel(context.Background())
 
 	cfg, err := config.LoadConfig(os.Getenv("CONFIG_FILE"))
 	if err != nil {
@@ -59,7 +64,7 @@ func main() {
 	httpClient := http.DefaultClient
 	crawlerManager := usecase2.NewCrawlerManager(repoSpider, logger, httpClient)
 	trackingUC := usecase.NewTracking(natsPublisher, logger, crawlerManager, trackRepo)
-	trackHandler := trackhttp.NewTrackHandler(logger, trackingUC)
+
 	natsConsumer := tracknats.NewTrackConsumer(nc, js, logger, cfg.Nats, trackingUC)
 
 	go func() {
@@ -69,10 +74,22 @@ func main() {
 		}
 	}()
 
-	r := gin.New()
-	r.Use(gin.Logger(), gin.Recovery())
-	r.GET("/api/track", trackHandler.GetTrackingNumberResultHandler)
-	r.POST("/api/track", trackHandler.TrackingNumberCrawlerHandler)
+	trackHandler := trackhttp.NewTrackHandler(logger, trackingUC)
+	server := httpserver.NewOpenAPIServer(logger, trackHandler, cfg.HTTPServer)
 
-	r.Run(":" + cfg.HTTPServer.Port)
+	defer server.Shutdown()
+
+	go func() {
+		err := server.Serve()
+		if err != nil {
+			logger.Fatal(err)
+		}
+	}()
+
+	chSignal := make(chan os.Signal, 1)
+	signal.Notify(chSignal, syscall.SIGINT, syscall.SIGTERM)
+	<-chSignal
+	cancel()
+
+	logger.Info("Shutting down...")
 }

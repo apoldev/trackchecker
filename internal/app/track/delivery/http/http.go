@@ -3,28 +3,28 @@ package http
 import (
 	"net/http"
 
+	appmodels "github.com/apoldev/trackchecker/internal/app/models"
+	"github.com/apoldev/trackchecker/internal/app/restapi/models"
+	"github.com/apoldev/trackchecker/internal/app/restapi/restapi/operations"
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/swag"
 	"github.com/google/uuid"
 
-	"github.com/apoldev/trackchecker/internal/app/models"
-
 	"github.com/apoldev/trackchecker/pkg/logger"
-	"github.com/gin-gonic/gin"
 )
 
 const (
-	ErrIDEmpty             = "id is empty"
-	ErrTrackingNumberEmpty = "tracking number is empty"
-	ErrorPublishToQueue    = "error publish tracking number to queue"
-	ErrorNotFound          = "not found"
+	ErrorPublishToQueue = "error publish tracking number to queue"
+	ErrorNotFound       = "not found"
 )
 
 // QueuePublisher is an interface for publish tracking number to queue.
 type QueuePublisher interface {
-	PublishTrackingNumbersToQueue(id string, trackingNumbers []string) ([]models.TrackingNumber, error)
+	PublishTrackingNumbersToQueue(id string, trackingNumbers []string) ([]appmodels.TrackingNumber, error)
 }
 
 type TrackingResultGetter interface {
-	GetTrackingResult(id string) ([]*models.Crawler, error)
+	GetTrackingResult(id string) ([]*appmodels.Crawler, error)
 }
 
 type Tracking interface {
@@ -44,73 +44,59 @@ func NewTrackHandler(log logger.Logger, tracking Tracking) *TrackHandler {
 	}
 }
 
-type ResponseTrackingResult struct {
-	Status bool              `json:"status"`
-	Error  string            `json:"error,omitempty"`
-	Data   []*models.Crawler `json:"data,omitempty"`
-}
-
-func (h *TrackHandler) GetTrackingNumberResultHandler(c *gin.Context) {
-	var err error
-	var data []*models.Crawler
-
-	id := c.Query("id")
-	if id == "" {
-		c.JSON(http.StatusBadRequest, ErrIDEmpty)
-		return
-	}
-
-	data, err = h.tracking.GetTrackingResult(id)
-	if err != nil || data == nil {
-		c.JSON(http.StatusNotFound, ResponseTrackingResult{
-			Error: ErrorNotFound,
-		})
-		return
-	}
-
-	c.JSON(http.StatusOK, ResponseTrackingResult{
-		Status: true,
-		Data:   data,
-	})
-}
-
-type RequestCrawler struct {
-	TrackingNumbers []string `json:"tracking_numbers"`
-}
-
-type ResponseTrackingNumber struct {
-	TrackingNumber string `json:"tracking_number"`
-}
-type ResponseCrawler struct {
-	TrackingID      string                  `json:"tracking_id"`
-	TrackingNumbers []models.TrackingNumber `json:"tracking_numbers"`
-}
-
-func (h *TrackHandler) TrackingNumberCrawlerHandler(c *gin.Context) {
-	var err error
-	var req RequestCrawler
-
-	if err = c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, ErrTrackingNumberEmpty)
-		return
-	}
-
+func (h *TrackHandler) PostTrackingResultHandler(params operations.PostTrackParams) middleware.Responder {
 	trackingID := uuid.NewString()
-	tracks, err := h.tracking.PublishTrackingNumbersToQueue(trackingID, req.TrackingNumbers)
+	tracks, err := h.tracking.PublishTrackingNumbersToQueue(trackingID, params.Body.TrackingNumbers)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, ErrorPublishToQueue)
-		return
+		return operations.NewPostTrackDefault(http.StatusBadRequest).WithPayload(&models.Error{
+			Message: swag.String(ErrorPublishToQueue),
+		})
 	}
 
-	resp := ResponseCrawler{
-		TrackingID: trackingID,
+	result := models.RequestResult{
+		TrackingID:      trackingID,
+		TrackingNumbers: nil,
 	}
 	for i := range tracks {
-		resp.TrackingNumbers = append(resp.TrackingNumbers, models.TrackingNumber{
+		result.TrackingNumbers = append(result.TrackingNumbers, &models.TrackingNumber{
 			Code: tracks[i].Code,
 			UUID: tracks[i].UUID,
 		})
 	}
+	return operations.NewPostTrackCreated().WithPayload(&result)
+}
 
-	c.JSON(http.StatusCreated, resp)
+func (h *TrackHandler) GetTrackingResultHandler(params operations.GetResultsParams) middleware.Responder {
+	crawlers, err := h.tracking.GetTrackingResult(params.ID)
+	if err != nil || len(crawlers) == 0 {
+		return operations.NewGetResultsDefault(http.StatusNotFound).WithPayload(&models.Error{
+			Message: swag.String(ErrorNotFound),
+		})
+	}
+	data := make([]*models.Result, 0, len(crawlers))
+	for i := range crawlers {
+		c := crawlers[i]
+		results := make([]*models.SpiderResults, 0, len(c.Results))
+		for j := range c.Results {
+			r := c.Results[j]
+			results = append(results, &models.SpiderResults{
+				Error:          r.Err,
+				ExecuteTime:    r.ExecuteTime,
+				Result:         r.Result,
+				Spider:         r.Spider,
+				TrackingNumber: r.TrackingNumber,
+			})
+		}
+		data = append(data, &models.Result{
+			UUID:    c.UUID,
+			Status:  c.Status,
+			Code:    c.Code,
+			ID:      c.RequestID,
+			Results: results,
+		})
+	}
+	return operations.NewGetResultsOK().WithPayload(&models.TrackingResult{
+		Status: true,
+		Data:   data,
+	})
 }

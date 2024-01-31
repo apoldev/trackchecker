@@ -10,7 +10,8 @@ type Config struct {
 }
 
 type HTTPServer struct {
-	Port string `yaml:"port"`
+	Host string `yaml:"host"`
+	Port int    `yaml:"port"`
 }
 
 type Redis struct {
