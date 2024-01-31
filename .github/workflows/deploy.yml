@@ -9,8 +9,42 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Lint
-        uses: docker://golangci/golangci-lint:latest
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v4
         with:
-          args: golangci-lint run --timeout 5m0s --skip-dirs vendor --skip-files *_test.go
+          go-version: '1.21'
+          cache: false
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: v1.54
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Test
+        uses: docker://golang:1.21
+        with:
+          args: go test ./...
+  deploy:
+    needs: [tests]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+          cache: false
+      - name: Copy to host
+        run: |
+          sudo apt-get install -y ssh rsync
+          echo "$DOCKER_SSH_PRIVATE_KEY" > deploy_key.pem
+          chmod 600 deploy_key.pem
+          ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ secrets.HOST }} "mkdir -p /root/trackchecker"
+          rsync -avz -e 'ssh -i deploy_key.pem -o StrictHostKeyChecking=no' --exclude='.git' ./ ${{ secrets.HOST }}:/root/trackchecker
+        env:
+          DOCKER_SSH_PRIVATE_KEY: ${{ secrets.DOCKER_SSH_PRIVATE_KEY }}
+      - name: Deploy stack on remote server
+        run: |
+          ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ secrets.HOST }} "\
+          docker stack deploy -c /root/trackchecker/stack.yml trackcheckerci"

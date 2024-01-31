@@ -1,0 +1,30 @@
+version: "3.7"
+
+volumes:
+  nats_storage:
+
+networks:
+  traefik-public:
+    external: true
+
+services:
+  redis:
+    image: redis:7.2.4-alpine
+    container_name: trackchecker_redis
+    networks:
+      - traefik-public
+  nats:
+    image: nats:2.10.9-alpine3.19
+    container_name: trackchecker_nats
+    networks:
+      - traefik-public
+    command: nats-server -js --config /etc/nats/nats-server.conf
+    healthcheck:
+      test: echo $$(wget --server-response http://localhost:8222/varz 2>&1 | grep  '200 OK') | grep '200'  || exit 1
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    volumes:
+      - ./configs/nats-server.conf:/etc/nats/nats-server.conf
+      - nats_storage:/nats/storage
