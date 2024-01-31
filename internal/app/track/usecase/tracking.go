@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"encoding/json"
+
 	"github.com/apoldev/trackchecker/internal/app/models"
 	"github.com/apoldev/trackchecker/pkg/logger"
 	"github.com/google/uuid"

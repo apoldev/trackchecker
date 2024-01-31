@@ -2,6 +2,8 @@ package usecase_test
 
 import (
 	"errors"
+	"testing"
+
 	"github.com/apoldev/trackchecker/internal/app/crawler"
 	"github.com/apoldev/trackchecker/internal/app/models"
 	"github.com/apoldev/trackchecker/internal/app/track/usecase"
@@ -10,7 +12,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestTracking_Tracking(t *testing.T) {
@@ -36,6 +37,17 @@ func TestTracking_Tracking(t *testing.T) {
 			trackingNumber: nil,
 			results:        nil,
 			expectError:    crawler.ErrTrackIsNil,
+		},
+
+		{
+			name: "no spiders",
+			trackingNumber: &models.TrackingNumber{
+				Code: "111",
+			},
+			results: &models.Crawler{
+				Status: crawler.StatusNoSpiders,
+			},
+			expectError: nil,
 		},
 	}
 
@@ -64,10 +76,8 @@ func TestTracking_Tracking(t *testing.T) {
 				require.Equal(t, result, c.results)
 				require.NoError(t, err)
 			}
-
 		})
 	}
-
 }
 
 func TestTracking_GetTrackingResult(t *testing.T) {
@@ -120,7 +130,6 @@ func TestTracking_GetTrackingResult(t *testing.T) {
 			}
 		})
 	}
-
 }
 
 func TestTracking_SaveTrackingResult(t *testing.T) {
@@ -183,7 +192,6 @@ func TestTracking_SaveTrackingResult(t *testing.T) {
 			}
 		})
 	}
-
 }
 
 func TestTracking_PublishTrackingNumberToQueue(t *testing.T) {
@@ -228,5 +236,4 @@ func TestTracking_PublishTrackingNumberToQueue(t *testing.T) {
 
 	require.EqualError(t, err, expextError)
 	require.Empty(t, res)
-
 }
