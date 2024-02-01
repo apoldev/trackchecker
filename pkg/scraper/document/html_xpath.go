@@ -33,44 +33,7 @@ func (d *HTMLXpathDoc) Value() interface{} {
 }
 
 func (d *HTMLXpathDoc) FindOne(expr string) (Document, error) {
-	var err error
-	var exp *xpath.Expr
-
-	exp, err = xpath.Compile(expr)
-
-	if err != nil {
-		return nil, err
-	}
-
-	navigator := htmlquery.CreateXPathNavigator(d.node)
-
-	// h := GetCurrentNodeFromNavigator(navigator)
-	// fmt.Println(expr, "navigator", string(HtmlNodeToBytes(*h)))
-
-	itemNode := exp.Evaluate(navigator)
-
-	switch v := itemNode.(type) {
-	case *xpath.NodeIterator:
-
-		iterator := v
-		iterator.MoveNext()
-
-		if v, ok := iterator.Current().(*htmlquery.NodeNavigator); ok {
-			return &HTMLXpathDoc{
-				node: v.Current(),
-			}, nil
-		}
-
-	case string:
-
-		return &StringDoc{
-			value: v,
-		}, nil
-
-		// todo bool, float64
-	}
-
-	return nil, ErrNotExists
+	return getFindOne(d.node, expr)
 }
 
 func (d *HTMLXpathDoc) FindAll(expr string) []Document {

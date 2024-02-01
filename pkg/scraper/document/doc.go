@@ -1,9 +1,12 @@
 package document
 
-import "errors"
+import (
+	"errors"
+)
 
 var (
-	ErrNotExists = errors.New("not exist")
+	ErrNotExists    = errors.New("not exist")
+	ErrInvalidQuery = errors.New("invalid query")
 )
 
 // Document can be HTML, JSON, XML, etc.

@@ -4,7 +4,6 @@ import (
 	"bytes"
 
 	"github.com/antchfx/xmlquery"
-	"github.com/antchfx/xpath"
 )
 
 type XMLXpathDoc struct {
@@ -29,34 +28,7 @@ func (d *XMLXpathDoc) Value() interface{} {
 }
 
 func (d *XMLXpathDoc) FindOne(expr string) (Document, error) {
-	var err error
-	var exp *xpath.Expr
-
-	exp, err = xpath.Compile(expr)
-	if err != nil {
-		return nil, err
-	}
-
-	navigator := xmlquery.CreateXPathNavigator(d.node)
-	itemNode := exp.Evaluate(navigator)
-
-	switch v := itemNode.(type) {
-	case *xpath.NodeIterator:
-		iterator := v
-		iterator.MoveNext()
-		if v, ok := iterator.Current().(*xmlquery.NodeNavigator); ok {
-			return &XMLXpathDoc{
-				node: v.Current(),
-			}, nil
-		}
-	case string:
-		return &StringDoc{
-			value: v,
-		}, nil
-		// todo bool, float64
-	}
-
-	return nil, ErrNotExists
+	return getFindOne(d.node, expr)
 }
 
 func (d *XMLXpathDoc) FindAll(expr string) []Document {

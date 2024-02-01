@@ -17,10 +17,6 @@ func NewJSON(data []byte) (*JSONDoc, error) {
 }
 
 func (d *JSONDoc) Value() interface{} {
-	if d.data == nil {
-		return nil
-	}
-
 	return d.data.Value()
 }
 
