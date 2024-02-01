@@ -22,8 +22,19 @@ services:
       - traefik-public
     environment:
       CONFIG_FILE: 'config.yml'
+    healthcheck:
+      test: echo $$(wget --server-response http://localhost:8080/docs 2>&1 | grep  '200 OK') | grep '200'  || exit 1
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
     deploy:
-      replicas: 1
+      replicas: 4
+      update_config:
+        parallelism: 2
+        delay: 10s
+        order: start-first
+        failure_action: rollback
       placement:
         constraints:
           - node.labels.trackchecker==true
