@@ -91,9 +91,9 @@ func (c *TrackConsumer) StartQueueReceiveMessages(subject, durable string) error
 	}
 
 	for {
-		msgs, err := sub.Fetch(fetchSize, nats.MaxWait(fetchMaxWait))
-		if err != nil {
-			c.logger.Debug(err)
+		msgs, fetchErr := sub.Fetch(fetchSize, nats.MaxWait(fetchMaxWait))
+		if fetchErr != nil {
+			c.logger.Debug(fetchErr)
 		}
 
 		if len(msgs) > 0 {

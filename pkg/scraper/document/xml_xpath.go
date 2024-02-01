@@ -56,7 +56,7 @@ func (d *XMLXpathDoc) FindOne(expr string) (Document, error) {
 		// todo bool, float64
 	}
 
-	return nil, ErrorNotexist
+	return nil, ErrNotExists
 }
 
 func (d *XMLXpathDoc) FindAll(expr string) []Document {

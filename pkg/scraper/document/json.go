@@ -4,19 +4,19 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-type JsonDoc struct {
+type JSONDoc struct {
 	data *gjson.Result
 }
 
-func NewJson(data []byte) (*JsonDoc, error) {
+func NewJSON(data []byte) (*JSONDoc, error) {
 	result := gjson.ParseBytes(data)
 
-	return &JsonDoc{
+	return &JSONDoc{
 		data: &result,
 	}, nil
 }
 
-func (d *JsonDoc) Value() interface{} {
+func (d *JSONDoc) Value() interface{} {
 	if d.data == nil {
 		return nil
 	}
@@ -24,24 +24,24 @@ func (d *JsonDoc) Value() interface{} {
 	return d.data.Value()
 }
 
-func (d *JsonDoc) FindOne(path string) (Document, error) {
+func (d *JSONDoc) FindOne(path string) (Document, error) {
 	result := d.data.Get(path)
 
 	if !result.Exists() {
-		return nil, ErrorNotexist
+		return nil, ErrNotExists
 	}
 
-	return &JsonDoc{
+	return &JSONDoc{
 		data: &result,
 	}, nil
 }
 
-func (d *JsonDoc) FindAll(path string) []Document {
+func (d *JSONDoc) FindAll(path string) []Document {
 	array := d.data.Get(path).Array()
 	result := make([]Document, 0, len(array))
 
 	for i := range array {
-		result = append(result, &JsonDoc{
+		result = append(result, &JSONDoc{
 			data: &array[i],
 		})
 	}

@@ -9,7 +9,7 @@ func (d *StringDoc) Value() interface{} {
 }
 
 func (d *StringDoc) FindOne(_ string) (Document, error) {
-	return nil, ErrorNotexist
+	return nil, ErrNotExists
 }
 
 func (d *StringDoc) FindAll(_ string) []Document {

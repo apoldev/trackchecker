@@ -3,7 +3,7 @@ package document
 import "errors"
 
 var (
-	ErrorNotexist = errors.New("not exist")
+	ErrNotExists = errors.New("not exist")
 )
 
 // Document can be HTML, JSON, XML, etc.

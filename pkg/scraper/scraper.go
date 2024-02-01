@@ -156,8 +156,7 @@ func (t *Task) parseDoc(doc document.Document, builder *ResultBuilder, field *Fi
 		nodes := doc.FindAll(query)
 
 		for i := range nodes {
-			node := nodes[i]
-
+			node = nodes[i]
 			newPath := path + "." + strconv.Itoa(i)
 			if field.Element == nil || field.Element.Type == FieldTypeCommon {
 				builder.Set(newPath, node.Value())
@@ -194,13 +193,13 @@ func (t *Task) selectDocType(data []byte, args *Args) error {
 
 	switch t.Params["type"] {
 	case JSON:
-		args.document, err = document.NewJson(data)
+		args.document, err = document.NewJSON(data)
 	case HTML:
-		args.document, err = document.NewHtml(data)
+		args.document, err = document.NewHTML(data)
 	case XPATH:
-		args.document, err = document.NewHtmlXpath(data)
+		args.document, err = document.NewHTMLXpath(data)
 	case JSONXpath:
-		args.document, err = document.NewJsonXpath(data)
+		args.document, err = document.NewJSONXpath(data)
 	case XML:
 		args.document, err = document.NewXMLXpath(data)
 	}
