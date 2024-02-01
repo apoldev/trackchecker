@@ -1,4 +1,4 @@
-package document
+package document //nolint: dupl // different libs
 
 import (
 	"bytes"

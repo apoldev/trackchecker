@@ -36,7 +36,6 @@ func getFindOne(node interface{}, expr string) (Document, error) {
 }
 
 func getCurrentNode(iterator interface{}) (Document, error) {
-	var doc Document
 	switch n := iterator.(type) {
 	case *htmlquery.NodeNavigator:
 		return &HTMLXpathDoc{

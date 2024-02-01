@@ -38,19 +38,15 @@ func (d *HTMLXpathDoc) FindOne(expr string) (Document, error) {
 
 func (d *HTMLXpathDoc) FindAll(expr string) []Document {
 	nodes, err := htmlquery.QueryAll(d.node, expr)
-
 	if err != nil {
 		return nil
 	}
-
 	docs := make([]Document, 0, len(nodes))
-
 	for _, node := range nodes {
 		docs = append(docs, &HTMLXpathDoc{
 			node: node,
 		})
 	}
-
 	return docs
 }
 
