@@ -4,7 +4,7 @@ volumes:
   nats_storage:
 
 configs:
-  trackchecker_config:
+  trackchecker_config_2:
     external: true
 
 networks:
@@ -16,7 +16,7 @@ services:
     image: ghcr.io/apoldev/trackchecker:latest
     container_name: trackchecker_app
     configs:
-      - source: trackchecker_config
+      - source: trackchecker_config_2
         target: /app/config.yml
     networks:
       - traefik-public
