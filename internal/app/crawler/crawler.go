@@ -20,28 +20,30 @@ var (
 	ErrTrackIsNil = errors.New("tracking number is nil")
 )
 
-type SpiderRepo interface {
+// SpiderFinder can found spiders by tracking number regexp.
+type SpiderFinder interface {
 	FindSpidersByTrackingNumber(trackingNumber string) []*models.Spider
+}
+
+// Manager creates Crawler instances for starts spiders.
+// Crawler executes N tasks in goroutines and collect results.
+type Manager struct {
+	SpiderFinder SpiderFinder
+	logger       logger.Logger
+	client       *http.Client
+}
+
+func NewCrawlerManager(repo SpiderFinder, log logger.Logger, client *http.Client) *Manager {
+	return &Manager{
+		SpiderFinder: repo,
+		logger:       log,
+		client:       client,
+	}
 }
 
 type crawlerTask struct {
 	spider         *models.Spider
 	trackingNumber string
-}
-
-// Manager creates Crawler instances for starts spiders.
-type Manager struct {
-	SpiderRepo SpiderRepo
-	logger     logger.Logger
-	client     *http.Client
-}
-
-func NewCrawlerManager(repo SpiderRepo, log logger.Logger, client *http.Client) *Manager {
-	return &Manager{
-		SpiderRepo: repo,
-		logger:     log,
-		client:     client,
-	}
 }
 
 // Start can start spiders in parallel and wait for all spiders to finish.
@@ -62,7 +64,7 @@ func (c *Manager) Start(track *models.TrackingNumber) (*models.Crawler, error) {
 		Results:        make([]models.CrawlerResult, 0),
 		Status:         StatusRunning,
 	}
-	spiders := c.SpiderRepo.FindSpidersByTrackingNumber(track.Code)
+	spiders := c.SpiderFinder.FindSpidersByTrackingNumber(track.Code)
 	if len(spiders) == 0 {
 		crawler.Status = StatusNoSpiders
 		return &crawler, nil

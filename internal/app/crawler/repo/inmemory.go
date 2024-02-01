@@ -2,6 +2,7 @@ package repo
 
 import (
 	"encoding/json"
+	"io"
 	"os"
 	"regexp"
 	"strings"
@@ -23,6 +24,7 @@ func NewSpiderRepo(log logger.Logger) *SpiderRepo {
 	}
 }
 
+// LoadSpiders loads spiders from json file and compiles regexp from mask string.
 func (s *SpiderRepo) LoadSpiders(filename string) error {
 	spiders := make([]models.Spider, 0)
 
@@ -32,30 +34,12 @@ func (s *SpiderRepo) LoadSpiders(filename string) error {
 	}
 	defer file.Close()
 
-	dec := json.NewDecoder(file)
-	err = dec.Decode(&spiders)
+	err = s.readFile(file, &spiders)
 	if err != nil {
 		return err
 	}
 
-	for i := range spiders {
-		for j := range spiders[i].Masks {
-			var re *regexp.Regexp
-
-			regexpString := strings.Trim(spiders[i].Masks[j], "^$")
-			regexpString = strings.TrimSuffix(regexpString, "^")
-			re, err = regexp.Compile("^" + regexpString + "$")
-
-			if err != nil {
-				s.log.Warnf("spider regexp err: %s", err)
-				continue
-			}
-
-			spiders[i].RegexpMasks = append(spiders[i].RegexpMasks, re)
-		}
-
-		s.Spiders = append(s.Spiders, spiders[i])
-	}
+	s.compileRegexps(spiders)
 
 	return nil
 }
@@ -71,4 +55,31 @@ func (s *SpiderRepo) FindSpidersByTrackingNumber(trackingNumber string) []*model
 	}
 
 	return spiders
+}
+
+func (s *SpiderRepo) compileRegexps(spiders []models.Spider) {
+	var err error
+
+	for i := range spiders {
+		for j := range spiders[i].Masks {
+			var re *regexp.Regexp
+
+			regexpString := strings.Trim(spiders[i].Masks[j], "^$")
+			re, err = regexp.Compile("^" + regexpString + "$")
+
+			if err != nil {
+				s.log.Warnf("spider regexp err: %s", err)
+				continue
+			}
+
+			spiders[i].RegexpMasks = append(spiders[i].RegexpMasks, re)
+		}
+
+		s.Spiders = append(s.Spiders, spiders[i])
+	}
+}
+
+func (s *SpiderRepo) readFile(reader io.Reader, spiders *[]models.Spider) error {
+	dec := json.NewDecoder(reader)
+	return dec.Decode(&spiders)
 }

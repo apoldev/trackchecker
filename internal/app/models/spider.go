@@ -10,8 +10,8 @@ import (
 // spider can be selected by regexps.
 type Spider struct {
 	scraper.Scraper
-	Masks       []string `json:"masks"`
-	RegexpMasks []*regexp.Regexp
+	Masks       []string         `json:"masks"`
+	RegexpMasks []*regexp.Regexp `json:"-"`
 }
 
 func (s *Spider) Match(trackingNumber string) bool {

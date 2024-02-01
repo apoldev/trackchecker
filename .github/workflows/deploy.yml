@@ -5,14 +5,27 @@ on:
     branches:
       - develop_apoldev
       - feature/actions
-  pull_request:
+  merge_group:
     branches:
       - develop_apoldev
 
 permissions: read-all
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+          cache: false
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: v1.55
   tests:
+    needs: [lint]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -21,6 +34,7 @@ jobs:
         with:
           args: go test ./...
   docker:
+    needs: [lint, tests]
     runs-on: ubuntu-latest
     permissions:
       packages: write
@@ -41,7 +55,7 @@ jobs:
           tags: "ghcr.io/apoldev/trackchecker:latest"
           file: "build/prod.Dockerfile"
   deploy:
-    needs: [tests, docker]
+    needs: [docker]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3

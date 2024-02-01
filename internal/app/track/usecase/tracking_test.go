@@ -195,6 +195,7 @@ func TestTracking_SaveTrackingResult(t *testing.T) {
 }
 
 func TestTracking_PublishTrackingNumberToQueue(t *testing.T) {
+	t.Parallel()
 	publisherMock := mocks.NewPublisher(t)
 	trackResultMock := mocks.NewTrackResultRepo(t)
 	crawlerMock := mocks.NewCrawler(t)

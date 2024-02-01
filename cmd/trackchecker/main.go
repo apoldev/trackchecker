@@ -44,15 +44,18 @@ func main() {
 
 	logger.Info("Connected to " + nc.ConnectedUrl())
 
-	js, err := nc.JetStream(nats.PublishAsyncMaxPending(256))
+	js, err := nc.JetStream(nats.PublishAsyncMaxPending(cfg.Nats.JSMaxPending))
 	if err != nil {
 		logger.Fatal(err)
 	}
 
-	js.AddStream(&nats.StreamConfig{
+	_, addErr := js.AddStream(&nats.StreamConfig{
 		Name:     cfg.Nats.StreamName,
 		Subjects: []string{cfg.Nats.Subject},
 	})
+	if addErr != nil {
+		logger.Fatal(addErr)
+	}
 
 	repoSpider := repo2.NewSpiderRepo(logger)
 	err = repoSpider.LoadSpiders(cfg.ConfigSpiders)
@@ -68,7 +71,7 @@ func main() {
 	natsConsumer := tracknats.NewTrackConsumer(nc, js, logger, cfg.Nats, trackingUC)
 
 	go func() {
-		err = natsConsumer.StartQueueReceiveMessages(cfg.Nats.Subject, cfg.Nats.DurableName) //nolint:govet // cuz
+		err = natsConsumer.StartQueueReceiveMessages(cfg.Nats.Subject, cfg.Nats.DurableName)
 		if err != nil {
 			logger.Fatal(err)
 		}
@@ -77,12 +80,12 @@ func main() {
 	trackHandler := trackhttp.NewTrackHandler(logger, trackingUC)
 	server := httpserver.NewOpenAPIServer(logger, trackHandler, cfg.HTTPServer)
 
-	defer server.Shutdown()
+	defer server.Shutdown() //nolint: errcheck // ignore error and generated code from go-swagger
 
 	go func() {
-		err := server.Serve()
-		if err != nil {
-			logger.Fatal(err)
+		servErr := server.Serve()
+		if servErr != nil {
+			logger.Fatal(servErr)
 		}
 	}()
 

@@ -20,12 +20,12 @@ type Redis struct {
 }
 
 type Nats struct {
-	Server      string `yaml:"server"`
-	StreamName  string `yaml:"stream_name"`
-	Subject     string `yaml:"subject"`
-	DurableName string `yaml:"durable_name"`
-
-	WorkerCount int `yaml:"worker_count"`
+	Server       string `yaml:"server"`
+	StreamName   string `yaml:"stream_name"`
+	Subject      string `yaml:"subject"`
+	DurableName  string `yaml:"durable_name"`
+	WorkerCount  int    `yaml:"worker_count"`
+	JSMaxPending int    `yaml:"js_max_pending"`
 }
 
 func LoadConfig(filename string) (*Config, error) {

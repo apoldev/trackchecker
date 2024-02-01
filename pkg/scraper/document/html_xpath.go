@@ -8,23 +8,23 @@ import (
 	"golang.org/x/net/html"
 )
 
-type HtmlXpathDoc struct {
+type HTMLXpathDoc struct {
 	node *html.Node
 }
 
-func NewHtmlXpath(data []byte) (*HtmlXpathDoc, error) {
+func NewHTMLXpath(data []byte) (*HTMLXpathDoc, error) {
 	node, err := htmlquery.Parse(bytes.NewReader(data))
 
 	if err != nil {
 		return nil, err
 	}
 
-	return &HtmlXpathDoc{
+	return &HTMLXpathDoc{
 		node: node,
 	}, nil
 }
 
-func (d *HtmlXpathDoc) Value() interface{} {
+func (d *HTMLXpathDoc) Value() interface{} {
 	if d.node == nil {
 		return nil
 	}
@@ -32,7 +32,7 @@ func (d *HtmlXpathDoc) Value() interface{} {
 	return htmlquery.InnerText(d.node)
 }
 
-func (d *HtmlXpathDoc) FindOne(expr string) (Document, error) {
+func (d *HTMLXpathDoc) FindOne(expr string) (Document, error) {
 	var err error
 	var exp *xpath.Expr
 
@@ -56,7 +56,7 @@ func (d *HtmlXpathDoc) FindOne(expr string) (Document, error) {
 		iterator.MoveNext()
 
 		if v, ok := iterator.Current().(*htmlquery.NodeNavigator); ok {
-			return &HtmlXpathDoc{
+			return &HTMLXpathDoc{
 				node: v.Current(),
 			}, nil
 		}
@@ -70,10 +70,10 @@ func (d *HtmlXpathDoc) FindOne(expr string) (Document, error) {
 		// todo bool, float64
 	}
 
-	return nil, ErrorNotexist
+	return nil, ErrNotExists
 }
 
-func (d *HtmlXpathDoc) FindAll(expr string) []Document {
+func (d *HTMLXpathDoc) FindAll(expr string) []Document {
 	nodes, err := htmlquery.QueryAll(d.node, expr)
 
 	if err != nil {
@@ -83,7 +83,7 @@ func (d *HtmlXpathDoc) FindAll(expr string) []Document {
 	docs := make([]Document, 0, len(nodes))
 
 	for _, node := range nodes {
-		docs = append(docs, &HtmlXpathDoc{
+		docs = append(docs, &HTMLXpathDoc{
 			node: node,
 		})
 	}
@@ -107,7 +107,7 @@ func GetCurrentNodeFromNavigator(n *htmlquery.NodeNavigator) *html.Node {
 	return n.Current()
 }
 
-func HtmlNodeToBytes(node html.Node) []byte {
+func HTMLNodeToBytes(node html.Node) []byte {
 	var b bytes.Buffer
 
 	err := html.Render(&b, &node)

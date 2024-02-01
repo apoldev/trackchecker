@@ -6,23 +6,23 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-type HtmlDoc struct {
+type HTMLDoc struct {
 	selection *goquery.Selection
 }
 
-func NewHtml(data []byte) (*HtmlDoc, error) {
+func NewHTML(data []byte) (*HTMLDoc, error) {
 	doc, err := goquery.NewDocumentFromReader(bytes.NewReader(data))
 
 	if err != nil {
 		return nil, err
 	}
 
-	return &HtmlDoc{
+	return &HTMLDoc{
 		selection: doc.Selection,
 	}, nil
 }
 
-func (d *HtmlDoc) Value() interface{} {
+func (d *HTMLDoc) Value() interface{} {
 	if d.selection == nil {
 		return nil
 	}
@@ -30,21 +30,21 @@ func (d *HtmlDoc) Value() interface{} {
 	return d.selection.First().Text()
 }
 
-func (d *HtmlDoc) FindOne(expr string) (Document, error) {
+func (d *HTMLDoc) FindOne(expr string) (Document, error) {
 	selection := d.selection.Find(expr)
 
-	return &HtmlDoc{
+	return &HTMLDoc{
 		selection: selection,
 	}, nil
 }
 
-func (d *HtmlDoc) FindAll(expr string) []Document {
+func (d *HTMLDoc) FindAll(expr string) []Document {
 	selection := d.selection.Find(expr)
 
 	docs := make([]Document, 0, selection.Length())
 
 	selection.Each(func(i int, selection *goquery.Selection) {
-		docs = append(docs, &HtmlDoc{
+		docs = append(docs, &HTMLDoc{
 			selection: selection,
 		})
 	})
