@@ -12,8 +12,14 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
+const (
+	lifeTime       = 60 * time.Minute
+	prefixTracking = "tracking:"
+	prefixTrack    = "track:"
+)
+
 var (
-	ErrorNotFound = errors.New("not found")
+	ErrNotFound = errors.New("not found")
 )
 
 type TrackRepo struct {
@@ -35,20 +41,20 @@ func (r *TrackRepo) Set(track *models.TrackingNumber, results *models.Crawler) e
 	if err != nil {
 		return err
 	}
-	err = r.redis.HSet(ctx, "tracking:"+track.RequestID, "track:"+track.UUID, string(b)).Err()
+	err = r.redis.HSet(ctx, prefixTracking+track.RequestID, prefixTrack+track.UUID, string(b)).Err()
 
 	if err != nil {
 		return err
 	}
 
-	return r.redis.Expire(ctx, "tracking:"+track.RequestID, 60*time.Second).Err()
+	return r.redis.Expire(ctx, prefixTracking+track.RequestID, lifeTime).Err()
 }
 
 func (r *TrackRepo) Get(requestID string) ([]*models.Crawler, error) {
 	ctx := context.Background()
 	m, err := r.redis.HGetAll(ctx, "tracking:"+requestID).Result()
 	if err != nil {
-		return nil, ErrorNotFound
+		return nil, ErrNotFound
 	}
 
 	results := make([]*models.Crawler, 0, len(m))

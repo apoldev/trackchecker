@@ -13,4 +13,5 @@ nats:
   stream_name: TRACKING
   durable_name: durable
   worker_count: 10
+  js_max_pending: 256
 

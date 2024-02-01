@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"io"
-	"maps"
 	"net/http"
 	"strconv"
 	"strings"
@@ -18,16 +17,14 @@ const (
 	TaskTypeRequest       = "request"
 	TaskTypeQuery         = "query"
 	DefaultRequestTimeout = 10 * time.Second
+
+	DefaultUserAgent      = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.152 Safari/537.36" //nolint:lll
+	DefaultAcceptLanguage = "en-US;q=0.6,en;q=0.4"
+	DefaultEncoding       = "utf-8"
 )
 
 var (
-	ErrorDocumentIsNil = errors.New("document is nil")
-	DefaultHeaders     = map[string]string{
-		"User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.152 Safari/537.36",
-		// "Accept-Encoding": "gzip, deflate",
-		"Accept-Language": "en-US;q=0.6,en;q=0.4",
-		"Encoding":        "utf-8",
-	}
+	ErrDocumentIsNil = errors.New("document is nil")
 )
 
 // Scraper can scrape data from delivery service.
@@ -95,7 +92,11 @@ func (t *Task) Request(args *Args) error {
 		body = strings.NewReader(replacedBody)
 	}
 
-	headers := maps.Clone(DefaultHeaders)
+	headers := map[string]string{
+		"User-Agent":      DefaultUserAgent,
+		"Accept-Language": DefaultAcceptLanguage,
+		"Encoding":        DefaultEncoding,
+	}
 
 	// Если POST но нет content-type - установим дефолтный
 	if method == "POST" {
@@ -137,7 +138,7 @@ func (t *Task) Request(args *Args) error {
 // Query parses document with xpath or jsonpath or css selector.
 func (t *Task) Query(args *Args) error {
 	if args.document == nil {
-		return ErrorDocumentIsNil
+		return ErrDocumentIsNil
 	}
 	return t.parseDoc(args.document, args.ResultBuilder, &t.Field, t.Field.Path)
 }
@@ -152,9 +153,9 @@ func (t *Task) parseDoc(doc document.Document, builder *ResultBuilder, field *Fi
 		query = t.Payload
 	}
 
-	if field.Type == FieldTypeArray {
+	switch field.Type {
+	case FieldTypeArray:
 		nodes := doc.FindAll(query)
-
 		for i := range nodes {
 			node = nodes[i]
 			newPath := path + "." + strconv.Itoa(i)
@@ -166,22 +167,20 @@ func (t *Task) parseDoc(doc document.Document, builder *ResultBuilder, field *Fi
 				}
 			}
 		}
-	} else if field.Type == FieldTypeObject {
-		node, err = doc.FindOne(query)
 
+	case FieldTypeObject:
+		node, err = doc.FindOne(query)
 		if err != nil {
 			return err
 		}
-
 		for j := range field.Object {
 			_ = t.parseDoc(node, builder, field.Object[j], path+"."+field.Object[j].Path)
 		}
-	} else if field.Type == "" {
+	default:
 		node, err = doc.FindOne(query)
 		if err != nil {
 			return err
 		}
-
 		builder.Set(path, node.Value())
 	}
 
@@ -209,7 +208,7 @@ func (t *Task) selectDocType(data []byte, args *Args) error {
 	}
 
 	if args.document == nil {
-		return ErrorDocumentIsNil
+		return ErrDocumentIsNil
 	}
 
 	return nil
