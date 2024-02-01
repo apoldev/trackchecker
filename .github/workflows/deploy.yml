@@ -5,7 +5,7 @@ on:
     branches:
       - develop_apoldev
       - feature/actions
-  pull_request:
+  merge_group:
     branches:
       - develop_apoldev
 
