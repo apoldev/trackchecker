@@ -25,7 +25,6 @@ jobs:
         with:
           version: v1.55
   tests:
-    needs: [lint]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -34,7 +33,6 @@ jobs:
         with:
           args: go test ./...
   docker:
-    needs: [lint, tests]
     runs-on: ubuntu-latest
     permissions:
       packages: write
@@ -55,7 +53,7 @@ jobs:
           tags: "ghcr.io/apoldev/trackchecker:latest"
           file: "build/prod.Dockerfile"
   deploy:
-    needs: [docker]
+    needs: [lint, tests, docker]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
