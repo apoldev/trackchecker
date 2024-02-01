@@ -73,4 +73,6 @@ jobs:
       - name: Deploy stack on remote server
         run: |
           ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ secrets.HOST }} "\
+          sed -i 's/localhost:7777/trackchecker.1trackapp.com/g' /root/trackchecker/swagger.yaml && \
+          docker run --rm -v /root:/root quay.io/goswagger/swagger generate server -f /root/trackchecker/swagger.yaml -t /root/trackchecker/internal/app/restapi --exclude-main && \
           docker stack deploy -c /root/trackchecker/stack.yml trackcheckerci"
