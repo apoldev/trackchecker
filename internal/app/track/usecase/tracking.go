@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"context"
 	"encoding/json"
 
 	"github.com/apoldev/trackchecker/internal/pkg/logger"
@@ -20,8 +21,8 @@ type Publisher interface {
 //
 //go:generate go run github.com/vektra/mockery/v2@v2.40.1 --name TrackResultRepo
 type TrackResultRepo interface {
-	Set(track *models.TrackingNumber, crawler *models.Crawler) error
-	Get(requestID string) ([]*models.Crawler, error)
+	Set(ctx context.Context, track *models.TrackingNumber, crawler *models.Crawler) error
+	Get(ctx context.Context, requestID string) ([]*models.Crawler, error)
 }
 
 // Crawler is an interface for start crawler.
@@ -52,7 +53,7 @@ func NewTracking(
 	}
 }
 
-func (t *Tracking) PublishTrackingNumbersToQueue(id string, trackingNumbers []string) ([]models.TrackingNumber, error) {
+func (t *Tracking) PublishTrackingNumbersToQueue(ctx context.Context, id string, trackingNumbers []string) ([]models.TrackingNumber, error) {
 	tracks := make([]models.TrackingNumber, 0, len(trackingNumbers))
 	for i := range trackingNumbers {
 		track := models.TrackingNumber{
@@ -78,12 +79,12 @@ func (t *Tracking) PublishTrackingNumbersToQueue(id string, trackingNumbers []st
 	return tracks, nil
 }
 
-func (t *Tracking) GetTrackingResult(requestID string) ([]*models.Crawler, error) {
-	return t.trackRepo.Get(requestID)
+func (t *Tracking) GetTrackingResult(ctx context.Context, requestID string) ([]*models.Crawler, error) {
+	return t.trackRepo.Get(ctx, requestID)
 }
 
-func (t *Tracking) SaveTrackingResult(track *models.TrackingNumber, results *models.Crawler) error {
-	return t.trackRepo.Set(track, results)
+func (t *Tracking) SaveTrackingResult(ctx context.Context, track *models.TrackingNumber, results *models.Crawler) error {
+	return t.trackRepo.Set(ctx, track, results)
 }
 
 // Tracking selected spiders for tracking number and starts Crawler.

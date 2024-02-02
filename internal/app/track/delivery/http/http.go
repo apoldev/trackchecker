@@ -1,6 +1,7 @@
 package http
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/apoldev/trackchecker/internal/pkg/logger"
@@ -20,11 +21,15 @@ const (
 
 // QueuePublisher is an interface for publish tracking number to queue.
 type QueuePublisher interface {
-	PublishTrackingNumbersToQueue(id string, trackingNumbers []string) ([]appmodels.TrackingNumber, error)
+	PublishTrackingNumbersToQueue(
+		ctx context.Context,
+		id string,
+		trackingNumbers []string,
+	) ([]appmodels.TrackingNumber, error)
 }
 
 type TrackingResultGetter interface {
-	GetTrackingResult(id string) ([]*appmodels.Crawler, error)
+	GetTrackingResult(ctx context.Context, id string) ([]*appmodels.Crawler, error)
 }
 
 type Tracking interface {
@@ -45,8 +50,9 @@ func NewTrackHandler(log logger.Logger, tracking Tracking) *TrackHandler {
 }
 
 func (h *TrackHandler) PostTrackingResultHandler(params operations.PostTrackParams) middleware.Responder {
+	ctx := context.Background()
 	trackingID := uuid.NewString()
-	tracks, err := h.tracking.PublishTrackingNumbersToQueue(trackingID, params.Body.TrackingNumbers)
+	tracks, err := h.tracking.PublishTrackingNumbersToQueue(ctx, trackingID, params.Body.TrackingNumbers)
 	if err != nil {
 		return operations.NewPostTrackDefault(http.StatusBadRequest).WithPayload(&models.Error{
 			Message: swag.String(ErrorPublishToQueue),
@@ -67,7 +73,8 @@ func (h *TrackHandler) PostTrackingResultHandler(params operations.PostTrackPara
 }
 
 func (h *TrackHandler) GetTrackingResultHandler(params operations.GetResultsParams) middleware.Responder {
-	crawlers, err := h.tracking.GetTrackingResult(params.ID)
+	ctx := context.Background()
+	crawlers, err := h.tracking.GetTrackingResult(ctx, params.ID)
 	if err != nil || len(crawlers) == 0 {
 		return operations.NewGetResultsDefault(http.StatusNotFound).WithPayload(&models.Error{
 			Message: swag.String(ErrorNotFound),

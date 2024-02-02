@@ -63,7 +63,7 @@ func (c *TrackConsumer) worker(ctx context.Context, i int, ch chan *nats.Msg) {
 				continue
 			}
 
-			err = c.tracking.SaveTrackingResult(&track, results)
+			err = c.tracking.SaveTrackingResult(ctx, &track, results)
 			if err != nil {
 				c.logger.Warnf("worker err save tracking result: %v", err)
 				continue

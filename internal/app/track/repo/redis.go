@@ -35,9 +35,8 @@ func NewTrackRepo(r *redis.Client, log logger.Logger) *TrackRepo {
 	}
 }
 
-func (r *TrackRepo) Set(track *models.TrackingNumber, results *models.Crawler) error {
+func (r *TrackRepo) Set(ctx context.Context, track *models.TrackingNumber, results *models.Crawler) error {
 	var err error
-	ctx := context.Background()
 	b, err := json.Marshal(results)
 	if err != nil {
 		return err
@@ -51,8 +50,7 @@ func (r *TrackRepo) Set(track *models.TrackingNumber, results *models.Crawler) e
 	return r.redis.Expire(ctx, prefixTracking+track.RequestID, lifeTime).Err()
 }
 
-func (r *TrackRepo) Get(requestID string) ([]*models.Crawler, error) {
-	ctx := context.Background()
+func (r *TrackRepo) Get(ctx context.Context, requestID string) ([]*models.Crawler, error) {
 	m, err := r.redis.HGetAll(ctx, "tracking:"+requestID).Result()
 	if err != nil {
 		return nil, ErrNotFound
