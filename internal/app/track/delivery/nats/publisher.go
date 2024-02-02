@@ -1,6 +1,8 @@
 package nats
 
 import (
+	"context"
+
 	"github.com/apoldev/trackchecker/internal/app/config"
 	"github.com/apoldev/trackchecker/internal/pkg/logger"
 	"github.com/nats-io/nats.go"
@@ -27,7 +29,7 @@ func NewTrackPublisher(
 	}
 }
 
-func (p *TrackPublisher) Publish(message []byte) error {
+func (p *TrackPublisher) Publish(_ context.Context, message []byte) error {
 	_, err := p.js.Publish(p.cfg.Subject, message)
 	return err
 }

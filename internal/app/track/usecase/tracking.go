@@ -14,7 +14,7 @@ import (
 //
 //go:generate go run github.com/vektra/mockery/v2@v2.40.1 --name Publisher
 type Publisher interface {
-	Publish(message []byte) error
+	Publish(ctx context.Context, message []byte) error
 }
 
 // TrackResultRepo is an interface for save and get tracking result.
@@ -53,7 +53,11 @@ func NewTracking(
 	}
 }
 
-func (t *Tracking) PublishTrackingNumbersToQueue(ctx context.Context, id string, trackingNumbers []string) ([]models.TrackingNumber, error) {
+func (t *Tracking) PublishTrackingNumbersToQueue(
+	ctx context.Context,
+	id string,
+	trackingNumbers []string,
+) ([]models.TrackingNumber, error) {
 	tracks := make([]models.TrackingNumber, 0, len(trackingNumbers))
 	for i := range trackingNumbers {
 		track := models.TrackingNumber{
@@ -67,7 +71,7 @@ func (t *Tracking) PublishTrackingNumbersToQueue(ctx context.Context, id string,
 			t.logger.Warnf("error marshal tracking number: %v", err)
 			continue
 		}
-		err = t.publisher.Publish(b)
+		err = t.publisher.Publish(ctx, b)
 		if err != nil {
 			t.logger.Warnf("error publish tracking number to queue: %v", err)
 			return nil, err
@@ -83,7 +87,11 @@ func (t *Tracking) GetTrackingResult(ctx context.Context, requestID string) ([]*
 	return t.trackRepo.Get(ctx, requestID)
 }
 
-func (t *Tracking) SaveTrackingResult(ctx context.Context, track *models.TrackingNumber, results *models.Crawler) error {
+func (t *Tracking) SaveTrackingResult(
+	ctx context.Context,
+	track *models.TrackingNumber,
+	results *models.Crawler,
+) error {
 	return t.trackRepo.Set(ctx, track, results)
 }
 

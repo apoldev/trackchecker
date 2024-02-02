@@ -2,13 +2,14 @@ package grpctrack
 
 import (
 	"context"
+
+	trackingService2 "github.com/apoldev/trackchecker/internal/app/grpcservice"
 	"github.com/apoldev/trackchecker/internal/pkg/logger"
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
 	appmodels "github.com/apoldev/trackchecker/internal/app/models"
-	trackingService "github.com/apoldev/trackchecker/internal/app/track/proto"
 )
 
 type QueuePublisher interface {
@@ -29,7 +30,7 @@ type Tracking interface {
 }
 
 type TrackGRPCApi struct {
-	trackingService.UnimplementedTrackingServer
+	trackingService2.UnimplementedTrackingServer
 
 	tracking Tracking
 	logger   logger.Logger
@@ -44,24 +45,24 @@ func NewTrackGRPCApi(log logger.Logger, tracking Tracking) *TrackGRPCApi {
 
 func (s *TrackGRPCApi) PostTracking(
 	ctx context.Context,
-	in *trackingService.PostTrackingRequest,
-) (*trackingService.PostTrackingResponse, error) {
-	if len(in.TrackingNumbers) == 0 {
+	in *trackingService2.PostTrackingRequest,
+) (*trackingService2.PostTrackingResponse, error) {
+	if len(in.GetTrackingNumbers()) == 0 {
 		return nil, status.Error(codes.InvalidArgument, "tracking numbers is empty")
 	}
 
 	trackingID := uuid.NewString()
-	tracks, err := s.tracking.PublishTrackingNumbersToQueue(ctx, trackingID, in.TrackingNumbers)
+	tracks, err := s.tracking.PublishTrackingNumbersToQueue(ctx, trackingID, in.GetTrackingNumbers())
 	if err != nil {
 		return nil, status.Error(codes.Internal, "error publish tracking number to queue")
 	}
 
-	result := trackingService.PostTrackingResponse{
+	result := trackingService2.PostTrackingResponse{
 		TrackingId:      trackingID,
 		TrackingNumbers: nil,
 	}
 	for i := range tracks {
-		result.TrackingNumbers = append(result.TrackingNumbers, &trackingService.PostTrack{
+		result.TrackingNumbers = append(result.GetTrackingNumbers(), &trackingService2.PostTrack{
 			Code: tracks[i].Code,
 			Uuid: tracks[i].UUID,
 		})
@@ -72,18 +73,17 @@ func (s *TrackGRPCApi) PostTracking(
 
 func (s *TrackGRPCApi) GetResult(
 	ctx context.Context,
-	in *trackingService.GetTrackingID,
-) (*trackingService.GetTrackingResponse, error) {
-
+	in *trackingService2.GetTrackingID,
+) (*trackingService2.GetTrackingResponse, error) {
 	crawlers, err := s.tracking.GetTrackingResult(ctx, in.GetId())
 	if err != nil || len(crawlers) == 0 {
 		return nil, status.Error(codes.NotFound, "tracking results not found")
 	}
 
-	data := make([]*trackingService.TrackResponse, 0, len(crawlers))
+	data := make([]*trackingService2.TrackResponse, 0, len(crawlers))
 	for i := range crawlers {
 		c := crawlers[i]
-		results := make([]*trackingService.TrackResult, 0, len(c.Results))
+		results := make([]*trackingService2.TrackResult, 0, len(c.Results))
 		for j := range c.Results {
 			r := c.Results[j]
 
@@ -93,7 +93,7 @@ func (s *TrackGRPCApi) GetResult(
 				continue
 			}
 
-			results = append(results, &trackingService.TrackResult{
+			results = append(results, &trackingService2.TrackResult{
 				Error:          r.Err,
 				ExecuteTime:    float32(r.ExecuteTime),
 				Result:         string(bytes),
@@ -102,7 +102,7 @@ func (s *TrackGRPCApi) GetResult(
 			})
 		}
 
-		data = append(data, &trackingService.TrackResponse{
+		data = append(data, &trackingService2.TrackResponse{
 			Uuid:   c.UUID,
 			Status: c.Status,
 			Code:   c.Code,
@@ -110,7 +110,7 @@ func (s *TrackGRPCApi) GetResult(
 			Result: results,
 		})
 	}
-	return &trackingService.GetTrackingResponse{
+	return &trackingService2.GetTrackingResponse{
 		Status:   true,
 		Tracking: data,
 	}, nil

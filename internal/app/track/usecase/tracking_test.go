@@ -217,12 +217,12 @@ func TestTracking_PublishTrackingNumberToQueue(t *testing.T) {
 		},
 	}
 
+	ctx := context.Background()
 	publisherMock.
-		On("Publish", mock.Anything).
+		On("Publish", ctx, mock.Anything).
 		Return(nil).
 		Once()
 
-	ctx := context.Background()
 	res, err := tracking.PublishTrackingNumbersToQueue(ctx, reqID, []string{trackingNumber})
 
 	require.NoError(t, err)
@@ -233,7 +233,7 @@ func TestTracking_PublishTrackingNumberToQueue(t *testing.T) {
 
 	// test error
 	publisherMock.
-		On("Publish", mock.Anything).
+		On("Publish", ctx, mock.Anything).
 		Return(errors.New(expextError)).
 		Once()
 
