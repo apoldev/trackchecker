@@ -16,6 +16,7 @@ info:
 basePath: /
 schemes:
   - http
+  - https
 
 paths:
   /track:

@@ -5,6 +5,7 @@
 //	This is a server for tracking parcels
 //	Schemes:
 //	  http
+//	  https
 //	Host: localhost
 //	BasePath: /
 //	Version: 1.0.0
