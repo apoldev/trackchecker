@@ -42,8 +42,8 @@ services:
         - "traefik.enable=true"
         - "traefik.docker.network=traefik-public"
 
-        - "traefik.http.routers.trackchecker-http.service=trackchecker"
-        - "traefik.http.routers.trackchecker-http.rule=Host(`trackchecker.1trackapp.com`)"
+        - "traefik.http.routers.trackchecker-https.service=trackchecker"
+        - "traefik.http.routers.trackchecker-https.rule=Host(`trackchecker.1trackapp.com`)"
         - "traefik.http.routers.trackchecker-https.entrypoints=https"
         - "traefik.http.services.trackchecker.loadbalancer.server.port=8080"
         - "traefik.http.routers.trackchecker-https.tls=true"
