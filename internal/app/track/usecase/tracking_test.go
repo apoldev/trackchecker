@@ -1,6 +1,7 @@
 package usecase_test
 
 import (
+	"context"
 	"errors"
 	"testing"
 
@@ -101,7 +102,6 @@ func TestTracking_GetTrackingResult(t *testing.T) {
 			expectResult: nil,
 		},
 	}
-
 	for _, c := range cases {
 		c := c
 
@@ -115,12 +115,14 @@ func TestTracking_GetTrackingResult(t *testing.T) {
 
 			tracking := usecase.NewTracking(publisherMock, logger, crawlerMock, trackResultMock)
 
+			ctx := context.Background()
+
 			trackResultMock.
-				On("Get", c.id).
+				On("Get", ctx, c.id).
 				Return(c.expectResult, c.expectError).
 				Once()
 
-			data, err := tracking.GetTrackingResult(c.id)
+			data, err := tracking.GetTrackingResult(ctx, c.id)
 
 			if c.expectError != nil {
 				require.EqualError(t, err, c.expectError.Error())
@@ -178,12 +180,13 @@ func TestTracking_SaveTrackingResult(t *testing.T) {
 				UUID: uuid.NewString(),
 			}
 
+			ctx := context.Background()
 			trackResultMock.
-				On("Set", track, c.results).
+				On("Set", ctx, track, c.results).
 				Return(c.expectError).
 				Once()
 
-			err := tracking.SaveTrackingResult(track, c.results)
+			err := tracking.SaveTrackingResult(ctx, track, c.results)
 
 			if c.expectError != nil {
 				require.EqualError(t, err, c.expectError.Error())
@@ -219,7 +222,8 @@ func TestTracking_PublishTrackingNumberToQueue(t *testing.T) {
 		Return(nil).
 		Once()
 
-	res, err := tracking.PublishTrackingNumbersToQueue(reqID, []string{trackingNumber})
+	ctx := context.Background()
+	res, err := tracking.PublishTrackingNumbersToQueue(ctx, reqID, []string{trackingNumber})
 
 	require.NoError(t, err)
 	require.Len(t, tracks, 1)
@@ -233,7 +237,7 @@ func TestTracking_PublishTrackingNumberToQueue(t *testing.T) {
 		Return(errors.New(expextError)).
 		Once()
 
-	res, err = tracking.PublishTrackingNumbersToQueue(reqID, []string{trackingNumber})
+	res, err = tracking.PublishTrackingNumbersToQueue(ctx, reqID, []string{trackingNumber})
 
 	require.EqualError(t, err, expextError)
 	require.Empty(t, res)

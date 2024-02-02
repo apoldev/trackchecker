@@ -2,7 +2,6 @@ package grpctrack
 
 import (
 	"context"
-	"fmt"
 	"github.com/apoldev/trackchecker/internal/pkg/logger"
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
@@ -88,8 +87,11 @@ func (s *TrackGRPCApi) GetResult(
 		for j := range c.Results {
 			r := c.Results[j]
 
-			bytes, _ := r.Result.MarshalJSON()
-			fmt.Println(string(bytes))
+			bytes, marshalErr := r.Result.MarshalJSON()
+			if marshalErr != nil {
+				s.logger.Warnf("error marshal tracking result: %v", marshalErr)
+				continue
+			}
 
 			results = append(results, &trackingService.TrackResult{
 				Error:          r.Err,

@@ -3,6 +3,8 @@
 package mocks
 
 import (
+	context "context"
+
 	models "github.com/apoldev/trackchecker/internal/app/models"
 	mock "github.com/stretchr/testify/mock"
 )
@@ -12,9 +14,9 @@ type TrackResultRepo struct {
 	mock.Mock
 }
 
-// Get provides a mock function with given fields: requestID
-func (_m *TrackResultRepo) Get(requestID string) ([]*models.Crawler, error) {
-	ret := _m.Called(requestID)
+// Get provides a mock function with given fields: ctx, requestID
+func (_m *TrackResultRepo) Get(ctx context.Context, requestID string) ([]*models.Crawler, error) {
+	ret := _m.Called(ctx, requestID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Get")
@@ -22,19 +24,19 @@ func (_m *TrackResultRepo) Get(requestID string) ([]*models.Crawler, error) {
 
 	var r0 []*models.Crawler
 	var r1 error
-	if rf, ok := ret.Get(0).(func(string) ([]*models.Crawler, error)); ok {
-		return rf(requestID)
+	if rf, ok := ret.Get(0).(func(context.Context, string) ([]*models.Crawler, error)); ok {
+		return rf(ctx, requestID)
 	}
-	if rf, ok := ret.Get(0).(func(string) []*models.Crawler); ok {
-		r0 = rf(requestID)
+	if rf, ok := ret.Get(0).(func(context.Context, string) []*models.Crawler); ok {
+		r0 = rf(ctx, requestID)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*models.Crawler)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(requestID)
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, requestID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -42,17 +44,17 @@ func (_m *TrackResultRepo) Get(requestID string) ([]*models.Crawler, error) {
 	return r0, r1
 }
 
-// Set provides a mock function with given fields: track, crawler
-func (_m *TrackResultRepo) Set(track *models.TrackingNumber, crawler *models.Crawler) error {
-	ret := _m.Called(track, crawler)
+// Set provides a mock function with given fields: ctx, track, crawler
+func (_m *TrackResultRepo) Set(ctx context.Context, track *models.TrackingNumber, crawler *models.Crawler) error {
+	ret := _m.Called(ctx, track, crawler)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Set")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(*models.TrackingNumber, *models.Crawler) error); ok {
-		r0 = rf(track, crawler)
+	if rf, ok := ret.Get(0).(func(context.Context, *models.TrackingNumber, *models.Crawler) error); ok {
+		r0 = rf(ctx, track, crawler)
 	} else {
 		r0 = ret.Error(0)
 	}
