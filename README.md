@@ -19,17 +19,14 @@ ___
 
 ___
 
-* Swagger, go-swagger для генерации http сервера из swagger.yml
-* NATS (JetStream)
-* Redis для хранения результатов отслеживания
-* GitHub Action 
+* [Swagger, go-swagger](https://github.com/go-swagger/go-swagger) - для генерации http сервера из swagger.yml
+* [NATS (JetStream)](https://github.com/nats-io/nats.go) - брокер сообщений
+* [Redis](https://github.com/redis/go-redis) - redis клиент
+* [Testify](https://github.com/stretchr/testify) - тестирование
+* [Mockery](https://github.com/vektra/mockery) - для генерации моков
+* [Xpath](https://github.com/antchfx/xpath) - для парсера html, json, xml документов
+* GitHub Action
 * Docker, Docker Swarm кластер
-* Testify
-* Table-Driven tests
-* Mockery
-* Xpath для парсера html, json, xml документов
-
-
 
 <h3 id="h3">
 Как посмотреть
@@ -50,6 +47,12 @@ ___
 
 ```bash
 docker-compose up
+```
+
+Если требуется изменить [/api/swagger.yaml](./api/swagger.yaml) и перестроить http сервер, то выполнить команду:
+
+```bash
+swagger generate server --exclude-main -f ./api/swagger.yaml -t ./internal/app/restapi --exclude-main
 ```
 
 
