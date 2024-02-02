@@ -16,7 +16,7 @@ services:
     image: ghcr.io/apoldev/trackchecker:latest
     container_name: trackchecker_app
     configs:
-      - source: trackchecker_config_2
+      - source: trackchecker_config_3
         target: /app/config.yml
     networks:
       - traefik-public
@@ -41,11 +41,21 @@ services:
       labels:
         - "traefik.enable=true"
         - "traefik.docker.network=traefik-public"
+        -
         - "traefik.http.routers.trackchecker-http.service=trackchecker"
         - "traefik.http.routers.trackchecker-http.rule=Host(`trackchecker.1trackapp.com`)"
-        - "traefik.http.routers.trackchecker-http.entrypoints=http"
+        - "traefik.http.routers.trackchecker-https.entrypoints=https"
         - "traefik.http.services.trackchecker.loadbalancer.server.port=8080"
+        - "traefik.http.routers.trackchecker-https.tls=true"
+        - "traefik.http.routers.trackchecker-https.tls.certresolver=le"
 
+        - "traefik.http.routers.trackchecker-grpc.service=trackcheckergrpc"
+        - "traefik.http.routers.trackchecker-grpc.rule=Host(`trackchecker-grpc.1trackapp.com`)"
+        - "traefik.http.routers.trackchecker-grpc.entrypoints=https"
+        - "traefik.http.services.trackcheckergrpc.loadbalancer.server.scheme=h2c"
+        - "traefik.http.services.trackcheckergrpc.loadbalancer.server.port=8070"
+        - "traefik.http.routers.trackchecker-grpc.tls=true"
+        - "traefik.http.routers.trackchecker-grpc.tls.certresolver=le"
   redis:
     image: redis:7.2.4-alpine
     container_name: trackchecker_redis
