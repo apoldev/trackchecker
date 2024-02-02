@@ -30,6 +30,7 @@ func NewOpenAPIServer(
 
 	server.Port = cfg.Port
 	server.Host = cfg.Host
+	server.EnabledListeners = []string{"http"}
 
 	handler := configureAPI(api, logger, trackHandlers)
 	server.SetHandler(handler)

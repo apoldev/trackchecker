@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	fetchSize    = 1
-	fetchMaxWait = 1 * time.Second
+	fetchSize    = 10
+	fetchMaxWait = 10 * time.Second
 )
 
 type TrackConsumer struct {
