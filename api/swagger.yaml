@@ -13,7 +13,6 @@ info:
   description: This is a server for tracking parcels
   title: TrackChecker App
 
-host: localhost:7777
 basePath: /
 schemes:
   - http

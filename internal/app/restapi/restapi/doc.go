@@ -5,7 +5,7 @@
 //	This is a server for tracking parcels
 //	Schemes:
 //	  http
-//	Host: localhost:7777
+//	Host: localhost
 //	BasePath: /
 //	Version: 1.0.0
 //	Contact: Aleksei Poliakov<sozdaibk@gmail.com> https://apoldev.t.me/

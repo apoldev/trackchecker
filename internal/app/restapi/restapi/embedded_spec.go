@@ -38,7 +38,6 @@ func init() {
     },
     "version": "1.0.0"
   },
-  "host": "localhost:7777",
   "basePath": "/",
   "paths": {
     "/track": {
@@ -257,7 +256,6 @@ func init() {
     },
     "version": "1.0.0"
   },
-  "host": "localhost:7777",
   "basePath": "/",
   "paths": {
     "/track": {
