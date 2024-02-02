@@ -3,12 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/apoldev/trackchecker/internal/pkg/grpcserver"
 	"net"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/apoldev/trackchecker/internal/pkg/grpcserver"
 
 	"github.com/apoldev/trackchecker/internal/app/config"
 	usecase2 "github.com/apoldev/trackchecker/internal/app/crawler"
@@ -93,12 +94,12 @@ func main() {
 	}()
 
 	go func() {
-		grpcServer := grpcserver.NewGRPCServer(logger, cfg.GRPCServer, trackingUC)
+		grpcServer := grpcserver.NewGRPCServer(logger, trackingUC)
 		grpcListener, listenErr := net.Listen("tcp", fmt.Sprintf(":%d", cfg.GRPCServer.Port))
 		if listenErr != nil {
 			logger.Fatal(listenErr)
 		}
-		grpcServer.Serve(grpcListener)
+		_ = grpcServer.Serve(grpcListener)
 		defer grpcListener.Close()
 	}()
 
