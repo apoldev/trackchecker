@@ -3,9 +3,10 @@ package grpctrack
 import (
 	"context"
 
+	"github.com/apoldev/trackchecker/internal/pkg/logger"
+
 	appmodels "github.com/apoldev/trackchecker/internal/app/models"
 	trackingService "github.com/apoldev/trackchecker/internal/app/track/proto"
-	"github.com/apoldev/trackchecker/pkg/logger"
 )
 
 type QueuePublisher interface {

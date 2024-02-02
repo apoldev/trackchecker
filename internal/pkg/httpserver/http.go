@@ -4,11 +4,12 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/apoldev/trackchecker/internal/pkg/logger"
+
 	"github.com/apoldev/trackchecker/internal/app/config"
 	"github.com/apoldev/trackchecker/internal/app/restapi/restapi"
 	"github.com/apoldev/trackchecker/internal/app/restapi/restapi/operations"
 	trackhttp "github.com/apoldev/trackchecker/internal/app/track/delivery/http"
-	"github.com/apoldev/trackchecker/pkg/logger"
 	"github.com/bytedance/sonic"
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/loads"

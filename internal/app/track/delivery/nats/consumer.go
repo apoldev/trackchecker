@@ -5,10 +5,11 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/apoldev/trackchecker/internal/pkg/logger"
+
 	"github.com/apoldev/trackchecker/internal/app/config"
 	"github.com/apoldev/trackchecker/internal/app/models"
 	"github.com/apoldev/trackchecker/internal/app/track/usecase"
-	"github.com/apoldev/trackchecker/pkg/logger"
 	"github.com/nats-io/nats.go"
 )
 

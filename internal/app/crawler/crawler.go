@@ -5,8 +5,9 @@ import (
 	"net/http"
 	"sync"
 
+	"github.com/apoldev/trackchecker/internal/pkg/logger"
+
 	"github.com/apoldev/trackchecker/internal/app/models"
-	"github.com/apoldev/trackchecker/pkg/logger"
 	"github.com/apoldev/trackchecker/pkg/scraper"
 )
 

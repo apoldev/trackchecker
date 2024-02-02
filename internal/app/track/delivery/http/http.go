@@ -3,14 +3,14 @@ package http
 import (
 	"net/http"
 
+	"github.com/apoldev/trackchecker/internal/pkg/logger"
+
 	appmodels "github.com/apoldev/trackchecker/internal/app/models"
 	"github.com/apoldev/trackchecker/internal/app/restapi/models"
 	"github.com/apoldev/trackchecker/internal/app/restapi/restapi/operations"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
 	"github.com/google/uuid"
-
-	"github.com/apoldev/trackchecker/pkg/logger"
 )
 
 const (

@@ -7,8 +7,9 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/apoldev/trackchecker/internal/pkg/logger"
+
 	"github.com/apoldev/trackchecker/internal/app/models"
-	"github.com/apoldev/trackchecker/pkg/logger"
 )
 
 // SpiderRepo is a repository for spiders.

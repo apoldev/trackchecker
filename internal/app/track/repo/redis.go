@@ -6,9 +6,10 @@ import (
 	"errors"
 	"time"
 
+	"github.com/apoldev/trackchecker/internal/pkg/logger"
+
 	"github.com/apoldev/trackchecker/internal/app/models"
 
-	"github.com/apoldev/trackchecker/pkg/logger"
 	"github.com/redis/go-redis/v9"
 )
 
