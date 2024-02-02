@@ -1,0 +1,50 @@
+// protoc -I. --go_out=. --go-grpc_out=. *.proto
+// grpc-client-cli -proto ./ localhost:7766
+
+syntax = "proto3";
+
+package tracking;
+option go_package = ".;trackingService";
+
+service Tracking {
+  rpc PostTracking(PostTrackingRequest) returns (PostTrackingResponse);
+  rpc GetResult(GetTrackingID) returns (GetTrackingResponse);
+}
+
+message PostTrackingRequest {
+  repeated string tracking_numbers = 1;
+}
+
+message PostTrackingResponse {
+  string tracking_id = 1;
+  repeated PostTrack tracking_numbers = 2;
+}
+
+message PostTrack {
+  string code = 1;
+  string uuid = 2;
+}
+
+message GetTrackingID {
+  string id = 1;
+}
+
+message TrackResult {
+  string spider = 1;
+  string tracking_number = 2;
+  string error = 3;
+  float execute_time = 4;
+  string result = 5;
+}
+message TrackResponse {
+  string id = 1;
+  string code = 2;
+  string status = 3;
+  string uuid = 4;
+  repeated TrackResult result = 5;
+}
+
+message GetTrackingResponse {
+  bool status = 1;
+  repeated TrackResponse tracking = 2;
+}

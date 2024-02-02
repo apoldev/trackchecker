@@ -4,9 +4,14 @@ import "github.com/ilyakaznacheev/cleanenv"
 
 type Config struct {
 	ConfigSpiders string     `yaml:"config_spiders"`
+	GRPCServer    GRPCServer `yaml:"grpc_server"`
 	HTTPServer    HTTPServer `yaml:"http_server"`
 	Nats          Nats       `yaml:"nats"`
 	Redis         Redis      `yaml:"redis"`
+}
+
+type GRPCServer struct {
+	Port int `yaml:"port" env-default:"8070"`
 }
 
 type HTTPServer struct {

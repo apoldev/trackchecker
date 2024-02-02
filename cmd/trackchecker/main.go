@@ -2,6 +2,9 @@ package main
 
 import (
 	"context"
+	"fmt"
+	"github.com/apoldev/trackchecker/internal/pkg/grpcserver"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -87,6 +90,16 @@ func main() {
 		if servErr != nil {
 			logger.Fatal(servErr)
 		}
+	}()
+
+	go func() {
+		grpcServer := grpcserver.NewGRPCServer(logger, cfg.GRPCServer, trackingUC)
+		grpcListener, listenErr := net.Listen("tcp", fmt.Sprintf(":%d", cfg.GRPCServer.Port))
+		if listenErr != nil {
+			logger.Fatal(listenErr)
+		}
+		grpcServer.Serve(grpcListener)
+		defer grpcListener.Close()
 	}()
 
 	chSignal := make(chan os.Signal, 1)
