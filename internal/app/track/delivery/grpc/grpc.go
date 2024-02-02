@@ -2,7 +2,7 @@ package grpctrack
 
 import (
 	"context"
-	"fmt"
+
 	appmodels "github.com/apoldev/trackchecker/internal/app/models"
 	trackingService "github.com/apoldev/trackchecker/internal/app/track/proto"
 	"github.com/apoldev/trackchecker/pkg/logger"
@@ -39,8 +39,6 @@ func (s *TrackGRPCApi) PostTracking(
 	ctx context.Context,
 	in *trackingService.PostTrackingRequest,
 ) (*trackingService.PostTrackingResponse, error) {
-	fmt.Println(in.TrackingNumbers)
-
 	return &trackingService.PostTrackingResponse{
 		TrackingId: "123",
 	}, nil
@@ -50,7 +48,6 @@ func (s *TrackGRPCApi) GetResult(
 	ctx context.Context,
 	in *trackingService.GetTrackingID,
 ) (*trackingService.GetTrackingResponse, error) {
-
 	return &trackingService.GetTrackingResponse{
 		Status: true,
 	}, nil
