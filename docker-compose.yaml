@@ -11,6 +11,7 @@ services:
       dockerfile: ./build/dev.Dockerfile
     ports:
       - "7777:8080"
+      - "7766:8070"
     environment:
       GIN_MODE: 'release'
       CONFIG_FILE: './configs/config.yml'
