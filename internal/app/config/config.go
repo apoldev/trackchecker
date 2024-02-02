@@ -11,7 +11,7 @@ type Config struct {
 }
 
 type GRPCServer struct {
-	Port int `yaml:"port"`
+	Port int `yaml:"port" env-default:"8070"`
 }
 
 type HTTPServer struct {
