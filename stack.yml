@@ -41,7 +41,7 @@ services:
       labels:
         - "traefik.enable=true"
         - "traefik.docker.network=traefik-public"
-        -
+
         - "traefik.http.routers.trackchecker-http.service=trackchecker"
         - "traefik.http.routers.trackchecker-http.rule=Host(`trackchecker.1trackapp.com`)"
         - "traefik.http.routers.trackchecker-https.entrypoints=https"
