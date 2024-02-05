@@ -1,9 +1,10 @@
 # TrackChecker 
 
-TrackChecker - приложение для отслеживания посылок из различных почтовых и курьерских служб.
-
 ![deploy action](https://github.com/apoldev/trackchecker/actions/workflows/deploy.yml/badge.svg?branch=develop_apoldev)
 
+TrackChecker - приложение для отслеживания посылок из различных почтовых и курьерских служб.
+
+Это приложение вляется примером работы с GRPC, NATS, Swagger, Docker, Docker Swarm, CI/CD, и другими технологиями в golang.
 
 ### Содержание
 ___
@@ -11,16 +12,18 @@ ___
 #### [Как посмотреть в бою](#h3)
 #### [Как запустить локально](#h4)
 #### [Как это работает](#h5)
+#### [Добавленные парсеры](#h6)
 
 <h3 id="h1">
 Использовал в разработке
 </h3>
 
-
 ___
 
 * [Swagger, go-swagger](https://github.com/go-swagger/go-swagger) - для генерации http сервера из swagger.yml
-* [NATS (JetStream)](https://github.com/nats-io/nats.go) - брокер сообщений
+* [GRPC](https://github.com/grpc/grpc-go)
+* [NATS (JetStream)](https://github.com/nats-io/nats.go) - библиотека для работы с брокером сообщений NATS
+* [Watermill](https://watermill.io/) - библиотека для работы с Kafka, RabbitMQ, etc...
 * [Redis](https://github.com/redis/go-redis) - redis клиент
 * [Testify](https://github.com/stretchr/testify) - тестирование
 * [Mockery](https://github.com/vektra/mockery) - для генерации моков
@@ -34,12 +37,8 @@ ___
 
 ___
 
-Приложение деплоится на сервер с помощью github actions
-и доступно по адресу [trackchecker.1trackapp.com](https://trackchecker.1trackapp.com/)
-
-Ссылка на документацию swagger [swagger](https://trackchecker.1trackapp.com/docs)
-
-
+Приложение деплоится на сервер с помощью github actions. 
+Документация swagger доступна по адресу [trackchecker.1trackapp.com/docs](https://trackchecker.1trackapp.com/docs)
 
 <h3 id="h4">
 Как запустить локально
@@ -55,6 +54,18 @@ docker-compose up
 swagger generate server --exclude-main -f ./api/swagger.yaml -t ./internal/app/restapi --exclude-main
 ```
 
+<h3>Демонстрация</h3>
+
+_Требуется предварительно запустить основное приложение командой выше_
+
+#### Для запуска демонстрации запустите демо-клиент с помощью команды:
+
+```bash
+go run ./cmd/client/main.go
+```
+
+
+> Важно! Многие иностранные сайты не позволяют делать запросы с российских ip адресов. Поэтому, если вы запустите демо-клиент с российского ip, то вам частично могут вернуться пустые результаты или отмененные по таймауту.
 
 <h3 id="h5">
 Как это работает
@@ -64,7 +75,7 @@ ___
 
 1. TrackChecker получает запрос со списком номеров отслеживания в виде массива строк.
 2. Каждый трек-код отправляется в очередь отдельным сообщением. В текущей версии в качестве брокера сообщений используется NATS (JetStream).
-3. Другая часть приложения забирает из очереди по одном трек-коду.
+3. Другая часть приложения забирает из очереди по одному трек-коду.
 4. Трек-код проверяется в каждом парсере, у которого совпал по регулярному выражению.
 5. Результаты складываются в HSET Redis.
 
@@ -124,3 +135,17 @@ ___
   ]
 }
 ```
+
+<h3 id="h6">Добавленные парсеры</h3>
+
+___
+
+- [x] Почта России
+- [x] Почта США
+- [x] Почта Новой Зеландии
+- [x] Почта Южной Кореи
+- [x] Почта Малайзии
+- [x] DPD Польши
+- [x] Global Track&Trace
+- [x] Почта Швеции
+
