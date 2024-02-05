@@ -4,9 +4,9 @@
 
 TrackChecker - приложение для отслеживания посылок из различных почтовых и курьерских служб.
 
-Это приложение вляется примером работы с GRPC, NATS, Swagger, Docker, Docker Swarm, CI/CD, и другими технологиями в golang.
+Это приложение является примером работы с GRPC, NATS, Kafka, RabbitMQ, Swagger, Docker, Docker Swarm, CI/CD, и другими технологиями в golang.
 
-Для примера здесь также реализовано мини-ядро парсера, которое принимает конфигурацию для парсера простых сайтов/api отдающих xml, json, html.
+Для примера здесь также реализовано мини-ядро парсера, которое принимает конфигурацию для парсера простых сайтов/api, отдающих xml, json, html.
 
 #### [Подробнее в разделе Как это работает](#h5)
 
@@ -27,15 +27,17 @@ ___
 * [Swagger, go-swagger](https://github.com/go-swagger/go-swagger) - для генерации http сервера из swagger.yml
 * [GRPC](https://github.com/grpc/grpc-go)
 * [NATS (JetStream)](https://github.com/nats-io/nats.go) - библиотека для работы с брокером сообщений NATS
-* [Watermill](https://watermill.io/) - библиотека для работы с Kafka, RabbitMQ, etc...
+* [Kafka, Watermill](https://watermill.io/) - библиотека для работы с Kafka, RabbitMQ, etc...
 * [Redis](https://github.com/redis/go-redis) - redis клиент для golang
 * [Testify](https://github.com/stretchr/testify) - тестирование
 * [Mockery](https://github.com/vektra/mockery) - для генерации моков
 * [Xpath](https://github.com/antchfx/xpath) - для парсера html, json, xml документов
 * [Goquery](https://github.com/PuerkitoBio/goquery) - для парсера html документов
 * [Gjson](https://github.com/tidwall/gjson) - для парсера json документов
+* [Sjson](https://github.com/tidwall/sjson) - для записи в json документ
 * GitHub Action
-* Docker, Docker Swarm кластер
+* Docker
+* Docker Swarm кластер
 
 <h3 id="h3">
 Как посмотреть
