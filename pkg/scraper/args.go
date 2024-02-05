@@ -83,6 +83,8 @@ func (b *ResultBuilder) applyTransformers(data string, transformers []transform.
 			str = transform.Clean(str)
 		case transform.TypeDate:
 			str = transform.Date(str)
+		case transform.TypeReplaceString:
+			str = transform.ReplaceStr(str, transformer.Params["old"], transformer.Params["new"])
 		}
 	}
 	return str

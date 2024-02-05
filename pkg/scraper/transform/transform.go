@@ -3,8 +3,9 @@ package transform
 import "encoding/json"
 
 const (
-	TypeClean = "clean"
-	TypeDate  = "date"
+	TypeClean         = "clean"
+	TypeDate          = "date"
+	TypeReplaceString = "replace.string"
 )
 
 type Transformer struct {
