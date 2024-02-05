@@ -1,6 +1,235 @@
 [
   {
-    "code": "gtt",
+    "code": "sweden-post",
+    "masks": [
+      "[A-Z]{2}[0-9]{9}SE"
+    ],
+    "examples": [
+      "LE704280574SE"
+    ],
+    "tasks":[
+      {
+        "type":"request",
+        "payload":"https://api2.postnord.com/rest/shipment/v5/trackandtrace/recipientview?id=[track]&locale=en",
+        "params":{
+          "method":"GET",
+          "type":"json.xpath",
+          "headers": {
+            "x-bap-key": "web-ncp",
+            "Content-Type": "application/json"
+          }
+        },
+        "field":{
+        }
+      },
+      {
+        "type":"query",
+        "payload":"//events/*",
+        "field":{
+          "path":"events",
+          "type":"array",
+          "element":{
+            "type":"object",
+            "object":[
+              {
+                "path":"status",
+                "query":"./eventDescription",
+                "transformers": ["clean"]
+              },
+              {
+                "path":"date",
+                "query":"./eventTime",
+                "transformers": ["clean","date"]
+              },
+              {
+                "path":"place",
+                "query":"./location/name",
+                "transformers": ["clean"]
+              },
+              {
+                "path":"country",
+                "query":"./location/country",
+                "transformers": ["clean"]
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "code": "malaysia-post",
+    "masks": [
+      "[A-Z]{2}[0-9]{9}MY"
+    ],
+    "examples": [
+      "RC211375818MY"
+    ],
+    "tasks":[
+      {
+        "type":"request",
+        "payload":"https://ttu-svc.pos.com.my/api/trackandtrace/v1/request",
+        "params":{
+          "method":"POST",
+          "type":"json.xpath",
+          "body": "{\"connote_ids\":[\"[track]\"],\"culture\":\"en\"}",
+          "headers": {
+            "Accept": "application/json, text/plain, */*",
+            "Content-Type": "application/json"
+          }
+        },
+        "field":{
+        }
+      },
+      {
+        "type":"query",
+        "payload":"//node()[name()=\"tracking_data\"]/*",
+        "field":{
+          "path":"events",
+          "type":"array",
+          "element":{
+            "type":"object",
+            "object":[
+              {
+                "path":"status",
+                "query":"./process",
+                "transformers": ["clean"]
+              },
+              {
+                "path":"date",
+                "query":"./date",
+                "transformers": ["clean","date"]
+              },
+              {
+                "path":"place",
+                "query":"./office",
+                "transformers": ["clean"]
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "code": "new-zealand-post",
+    "masks": [
+      "[A-Z]{2}[0-9]{9}NZ",
+      "[A-Z]{2}[0-9]{9}AU"
+    ],
+    "examples": [
+      "LH256986182AU"
+    ],
+    "tasks":[
+      {
+        "type":"request",
+        "payload":"https://tools.nzpost.co.nz/tracking/api/parceltrack/parcels?tracking_reference=[track]",
+        "params":{
+          "method":"GET",
+          "type":"json.xpath"
+        },
+        "field":{
+        }
+      },
+      {
+        "type": "query",
+        "payload": "//signed_by/name",
+        "field": {
+          "path": "SignedBy"
+        }
+      },
+      {
+        "type":"query",
+        "payload":"//tracking_events/*",
+        "field":{
+          "path":"events",
+          "type":"array",
+          "element":{
+            "type":"object",
+            "object":[
+              {
+                "path":"status",
+                "query":"./status",
+                "transformers": ["clean"]
+              },
+              {
+                "path":"date",
+                "query":"./date_time",
+                "transformers": ["clean","date"]
+              },
+              {
+                "path":"place",
+                "query":"./depot_name",
+                "transformers": ["clean"]
+              },
+              {
+                "path":"details",
+                "query":"./description",
+                "transformers": ["clean"]
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "code": "south-korea",
+    "masks": [
+      "[A-Z]{2}[0-9]{9}KR"
+    ],
+    "examples": [
+      "EG014132620KR"
+    ],
+    "tasks":[
+      {
+        "type":"request",
+        "payload":"https://service.epost.go.kr/trace.RetrieveEmsRigiTraceList.comm?ems_gubun=E&sid1=&POST_CODE=[track]&mgbn=trace&traceselect=2&target_command=&JspURI=&postNum=[track]&x=9&y=9",
+        "params":{
+          "method":"GET",
+          "type":"xpath"
+        },
+        "field":{
+        }
+      },
+      {
+        "type":"query",
+        "payload":"//table[contains(@class,\"detail_off\")]//tr[position()>1]",
+        "field":{
+          "path":"events",
+          "type":"array",
+          "element":{
+            "type":"object",
+            "object":[
+              {
+                "path":"status",
+                "query":"./td[2]",
+                "transformers": ["clean"]
+              },
+              {
+                "path":"date",
+                "query":"./td[1]",
+                "transformers": [{
+                  "type": "replace.string",
+                  "params": {
+                    "old": ".",
+                    "new": "-"
+                  }
+                }, "date", "clean"]
+              },
+              {
+                "path":"place",
+                "query":"./td[3]",
+                "transformers": ["clean"]
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "code": "global-track-trace",
     "masks": [
       "[A-Z]{2}[0-9]{9}[A-Z]{2}"
     ],
@@ -71,7 +300,11 @@
   {
     "code":"usps",
     "masks": [
-      "[A-Z]{2}[0-9]{9}US"
+      "[A-Z]{2}[0-9]{9}US",
+      "[0-9]{22}",
+      "[0-9]{26}",
+      "[0-9]{30}",
+      "[0-9]{34,35}"
     ],
     "examples": [
       "EH036261918US"
@@ -223,9 +456,7 @@
   },
   {
     "code":"dpd-poland",
-    "masks": [
-      "[0-9]{14}"
-    ],
+    "masks": [],
     "tasks":[
       {
         "type":"request",
