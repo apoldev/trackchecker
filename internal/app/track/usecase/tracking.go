@@ -14,7 +14,7 @@ import (
 //
 //go:generate go run github.com/vektra/mockery/v2@v2.40.1 --name Publisher
 type Publisher interface {
-	Publish(ctx context.Context, message []byte) error
+	Publish(ctx context.Context, topic string, message []byte) error
 }
 
 // TrackResultRepo is an interface for save and get tracking result.
@@ -33,23 +33,26 @@ type Crawler interface {
 }
 
 type Tracking struct {
-	publisher Publisher
-	logger    logger.Logger
-	crawler   Crawler
-	trackRepo TrackResultRepo
+	publisher      Publisher
+	publisherTopic string
+	logger         logger.Logger
+	crawler        Crawler
+	trackRepo      TrackResultRepo
 }
 
 func NewTracking(
 	publisher Publisher,
+	publisherTopic string,
 	logger logger.Logger,
 	crawler Crawler,
 	trackRepo TrackResultRepo,
 ) *Tracking {
 	return &Tracking{
-		publisher: publisher,
-		logger:    logger,
-		crawler:   crawler,
-		trackRepo: trackRepo,
+		publisher:      publisher,
+		publisherTopic: publisherTopic,
+		logger:         logger,
+		crawler:        crawler,
+		trackRepo:      trackRepo,
 	}
 }
 
@@ -71,12 +74,13 @@ func (t *Tracking) PublishTrackingNumbersToQueue(
 			t.logger.Warnf("error marshal tracking number: %v", err)
 			continue
 		}
-		err = t.publisher.Publish(ctx, b)
+		err = t.publisher.Publish(ctx, t.publisherTopic, b)
 		if err != nil {
 			t.logger.Warnf("error publish tracking number to queue: %v", err)
 			return nil, err
 		}
 
+		t.logger.Debugf("Publish message %v", string(b))
 		tracks = append(tracks, track)
 	}
 
@@ -106,4 +110,29 @@ func (t *Tracking) Tracking(track *models.TrackingNumber) (*models.Crawler, erro
 	t.logger.Debugf("got %d track results on %s", len(crawler.Results), track.UUID)
 
 	return crawler, nil
+}
+
+// MessageHandle is a handler for messages from broker.
+func (t *Tracking) MessageHandle(ctx context.Context, data []byte) error {
+	track := models.TrackingNumber{}
+	err := json.Unmarshal(data, &track)
+
+	if err != nil {
+		t.logger.Warnf("worker err read message: %v", err)
+		return err
+	}
+
+	results, err := t.Tracking(&track)
+	if err != nil {
+		t.logger.Warnf("worker err tracking: %v", err)
+		return err
+	}
+
+	err = t.SaveTrackingResult(ctx, &track, results)
+	if err != nil {
+		t.logger.Warnf("worker err save tracking result: %v", err)
+		return err
+	}
+
+	return nil
 }

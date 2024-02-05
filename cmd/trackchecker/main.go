@@ -5,8 +5,6 @@ import (
 
 	"github.com/apoldev/trackchecker/internal/app/config"
 	"github.com/apoldev/trackchecker/internal/pkg/app"
-	nats2 "github.com/apoldev/trackchecker/internal/pkg/nats"
-	"github.com/apoldev/trackchecker/internal/pkg/redis"
 	"github.com/sirupsen/logrus"
 )
 
@@ -20,16 +18,7 @@ func main() {
 		logger.Fatal(err)
 	}
 
-	redisConn := redis.NewRedisConnection(&cfg.Redis)
-
-	nc, err := nats2.NewNatsConn(cfg.Nats.Server)
-	if err != nil {
-		logger.Fatal(err)
-	}
-	logger.Info("Connected to nats " + nc.ConnectedUrl())
-
-	trackCheckerApp := app.New(logger, cfg, redisConn, nc)
-
+	trackCheckerApp := app.New(logger, cfg)
 	runErr := trackCheckerApp.Run()
 	if runErr != nil {
 		logger.Fatal(runErr)
