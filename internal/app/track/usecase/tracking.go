@@ -84,6 +84,7 @@ func (t *Tracking) PublishTrackingNumbersToQueue(
 		tracks = append(tracks, track)
 	}
 
+	// todo save request id in redis
 	return tracks, nil
 }
 

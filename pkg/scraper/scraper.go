@@ -16,7 +16,7 @@ const (
 	TaskTypeSource        = "source"
 	TaskTypeRequest       = "request"
 	TaskTypeQuery         = "query"
-	DefaultRequestTimeout = 10 * time.Second
+	DefaultRequestTimeout = 5 * time.Second
 
 	DefaultUserAgent      = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.152 Safari/537.36" //nolint:lll
 	DefaultAcceptLanguage = "en-US;q=0.6,en;q=0.4"
@@ -51,10 +51,10 @@ func (s *Scraper) Scrape(args *Args) error {
 }
 
 type Task struct {
-	Type    string            `json:"type,omitempty"`
-	Payload string            `json:"payload,omitempty"`
-	Params  map[string]string `json:"params,omitempty"`
-	Field   Field             `json:"field,omitempty"`
+	Type    string                 `json:"type,omitempty"`
+	Payload string                 `json:"payload,omitempty"`
+	Params  map[string]interface{} `json:"params,omitempty"`
+	Field   Field                  `json:"field,omitempty"`
 }
 
 func (t *Task) Process(args *Args) error {
@@ -84,10 +84,12 @@ func (t *Task) Request(args *Args) error {
 
 	method = "GET"
 	if t.Params["method"] != "" {
-		method = t.Params["method"]
+		if v, ok := t.Params["method"].(string); ok {
+			method = v
+		}
 	}
 
-	if v, ok := t.Params["body"]; ok && method != "GET" {
+	if v, ok := t.Params["body"].(string); ok && method != "GET" {
 		replacedBody := args.variables.ReplaceStringFromVariables(v)
 		body = strings.NewReader(replacedBody)
 	}
@@ -98,6 +100,13 @@ func (t *Task) Request(args *Args) error {
 		"Encoding":        DefaultEncoding,
 	}
 
+	if h, ok := t.Params["headers"].(map[string]interface{}); ok {
+		for i := range h {
+			if v, ok2 := h[i].(string); ok2 {
+				headers[i] = v
+			}
+		}
+	}
 	// Если POST но нет content-type - установим дефолтный
 	if method == "POST" {
 		if _, ok := headers["Content-Type"]; !ok {

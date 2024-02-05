@@ -48,7 +48,7 @@ func TestScraper_Request(t *testing.T) {
 			{
 				Type:    "request",
 				Payload: "https://tracktrace.dpd.com.pl/EN/findPackage",
-				Params: map[string]string{
+				Params: map[string]interface{}{
 					"type":   "xpath",
 					"method": "POST",
 					"body":   "q=[track]&typ=1",
@@ -129,7 +129,7 @@ func TestScraper_Parsing(t *testing.T) {
 			{
 				Type:    "source",
 				Payload: htmlData,
-				Params: map[string]string{
+				Params: map[string]interface{}{
 					"type": "xpath",
 				},
 			},
