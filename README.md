@@ -6,6 +6,10 @@ TrackChecker - приложение для отслеживания посыло
 
 Это приложение вляется примером работы с GRPC, NATS, Swagger, Docker, Docker Swarm, CI/CD, и другими технологиями в golang.
 
+Для примера здесь также реализовано мини-ядро парсера, которое принимает конфигурацию для парсера простых сайтов/api отдающих xml, json, html.
+
+#### [Подробнее в разделе Как это работает](#h5)
+
 ### Содержание
 ___
 #### [Использовано в разработке](#h1)
@@ -24,10 +28,12 @@ ___
 * [GRPC](https://github.com/grpc/grpc-go)
 * [NATS (JetStream)](https://github.com/nats-io/nats.go) - библиотека для работы с брокером сообщений NATS
 * [Watermill](https://watermill.io/) - библиотека для работы с Kafka, RabbitMQ, etc...
-* [Redis](https://github.com/redis/go-redis) - redis клиент
+* [Redis](https://github.com/redis/go-redis) - redis клиент для golang
 * [Testify](https://github.com/stretchr/testify) - тестирование
 * [Mockery](https://github.com/vektra/mockery) - для генерации моков
 * [Xpath](https://github.com/antchfx/xpath) - для парсера html, json, xml документов
+* [Goquery](https://github.com/PuerkitoBio/goquery) - для парсера html документов
+* [Gjson](https://github.com/tidwall/gjson) - для парсера json документов
 * GitHub Action
 * Docker, Docker Swarm кластер
 
@@ -78,6 +84,7 @@ ___
 3. Другая часть приложения забирает из очереди по одному трек-коду.
 4. Трек-код проверяется в каждом парсере, у которого совпал по регулярному выражению.
 5. Результаты складываются в HSET Redis.
+6. Клиент через некоторое время запрашивает результаты запроса.
 
 Сами парсеры представляют из себя структуру, деклараттивно описывающую "как парсить", в которых указана последовательность действий для выполнения http запросов и дальнейшего парсинга этого документа с помощью:
 * [xpath](https://github.com/antchfx/xpath) для html, xml, json
@@ -136,7 +143,7 @@ ___
 }
 ```
 
-<h3 id="h6">Добавленные парсеры</h3>
+<h3 id="h6">Добавленные почтовые службы</h3>
 
 ___
 
