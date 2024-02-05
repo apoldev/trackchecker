@@ -70,8 +70,66 @@ _Требуется предварительно запустить основн
 go run ./cmd/client/main.go
 ```
 
-
 > Важно! Многие иностранные сайты не позволяют делать запросы с российских ip адресов. Поэтому, если вы запустите демо-клиент с российского ip, то вам частично могут вернуться пустые результаты или отмененные по таймауту.
+
+<h4>Результат работы демо клиента</h4>
+
+___
+
+```bash
+LE704280574SE found at sweden-post: 2023-12-06T17:06:00Z, The shipment item has been dropped off by sender
+LE704280574SE found at global-track-trace: 2023-12-07T16:22:00Z, Departure from outward office of exchange, SGSINN
+RK166520145LV found at global-track-trace: 2024-01-19T11:28:00Z, Departure from outward office of exchange, LVRIXF
+EH036261918US found at global-track-trace: 2024-01-21T00:43:00Z, Departure from outward office of exchange, USLAXA
+EH036261918US found at usps: 2024-01-31T16:22:00Z, Delivered
+LE704180823SE found at global-track-trace: 2023-12-05T17:19:00Z, Departure from outward office of exchange, SGSINN
+LE704180823SE found at sweden-post: 2023-12-04T17:00:00Z, The shipment item has been dropped off by sender
+LE703771444SE found at global-track-trace: 2023-11-16T14:02:00Z, Departure from outward office of exchange, SGSINN
+LE703771444SE found at sweden-post: 2023-11-16T14:52:00Z, The shipment item has been dropped off by sender
+LE704046934SE found at global-track-trace: 2023-11-29T16:36:00Z, Departure from outward office of exchange, SGSINN
+LE704046934SE found at sweden-post: 2023-12-08T13:16:00Z, The shipment item has arrived at the country of destination
+92748999997762543411393406 found at usps: 2024-01-12T12:38:00Z, Departed Shipping Partner Facility, USPS Awaiting Item, SAN LEANDRO, CA 94578
+LM219469900SE not found at global-track-trace: unexpected end of JSON input
+LM219469900SE found at sweden-post: 2024-02-05T10:17:00Z, The shipment item has been dropped off by sender
+420751699214490233605881208508 found at usps: 2024-02-03T16:38:00Z, Arrived at USPS Regional Origin Facility, LOS ANGELES CA DISTRIBUTION CENTER
+UA132229530HU found at global-track-trace: 2024-01-05T06:36:00Z, Departure from outward office of exchange, HUBUDB
+9300110555800007963985 found at usps: 2024-02-04T18:32:00Z, Arrived at USPS Regional Origin Facility, CHICAGO IL NETWORK DISTRIBUTION CENTER
+9400108205498532578275 found at usps: 2024-01-09T13:39:00Z, Shipping Label Created, USPS Awaiting Item, NIAGARA FALLS, NY 14305
+LH256986182AU not found at global-track-trace: unexpected end of JSON input
+LH256986182AU found at new-zealand-post: 2023-07-24T11:44:00Z, Picked up/Collected, , Your item has been collected by the overseas postal service and is en route to their depot
+UM908307556US not found at global-track-trace: unexpected end of JSON input
+UM908307556US found at usps: 2023-12-30T07:08:00Z, Departed, SAO PAULO
+UE400083227US not found at global-track-trace: unexpected end of JSON input
+UE400083227US found at usps: 2023-12-14T10:38:00Z, Departed, BRUSSELS
+9200190348376028555454 found at usps: 2023-12-14T11:31:00Z, Arrived at Post Office, MIAMI, FL 33166
+4203316692748927005455000598734364 found at usps: 2024-01-28T11:08:00Z, Delivered to Agent for Final Delivery, MIAMI, FL 33166
+RC211515121MY found at global-track-trace: 2024-01-10T13:31:00Z, Posting/Collection, MYPENB
+RC211515121MY found at malaysia-post: 2024-01-10T17:17:38Z, Departed from International Hub to Overseas Destination
+EG014132620KR not found at global-track-trace: unexpected end of JSON input
+EG014132620KR found at south-korea: 2024-02-01T16:33:00Z, 발송, 고양일산우체국
+EX407171527KR not found at global-track-trace: unexpected end of JSON input
+EX407171527KR found at south-korea: 2024-01-16T20:34:00Z, 발송, 인천해상교환우체국
+EG012385263KR found at global-track-trace: 2023-12-23T14:04:00Z, Final delivery, MNUB19
+EG012385263KR found at south-korea: 2023-12-13T19:01:00Z, 발송, 고양덕양우체국
+EG013492697KR not found at global-track-trace: unexpected end of JSON input
+EG013492697KR found at south-korea: 2024-01-17T17:48:00Z, 발송, 안산우체국
+UD657184909MY found at global-track-trace: 2024-01-02T16:56:00Z, Departure from outward office of exchange, MYPENB
+UD657184909MY found at malaysia-post: 2024-01-02T18:11:54Z, Item Sent to Burma, In Transit
+10881378073059 not found at russian-post: Get "http://www.pochta.ru/api/tracking/api/v1/trackings/by-barcodes?language=ru&track-numbers=10881378073059": context deadline exceeded
+80513392264272 not found at russian-post: Get "http://www.pochta.ru/api/tracking/api/v1/trackings/by-barcodes?language=ru&track-numbers=80513392264272": context deadline exceeded
+12907591218904 not found at russian-post: Get "http://www.pochta.ru/api/tracking/api/v1/trackings/by-barcodes?language=ru&track-numbers=12907591218904": dial tcp 212.164.138.79:80: i/o timeout
+66013290014431 not found at russian-post: Get "http://www.pochta.ru/api/tracking/api/v1/trackings/by-barcodes?language=ru&track-numbers=66013290014431": dial tcp 212.164.138.79:80: i/o timeout
+CL123084655RU not found at global-track-trace: unexpected end of JSON input
+CL123084655RU not found at russian-post: Get "http://www.pochta.ru/api/tracking/api/v1/trackings/by-barcodes?language=ru&track-numbers=CL123084655RU": context deadline exceeded
+UD660079300MY found at global-track-trace: 2024-01-29T01:35:00Z, Posting/Collection, MYKULC
+UD660079300MY found at malaysia-post: 2024-01-29T10:33:56Z, Item Sent to Uzbekistan, In Transit
+UD656337373MY found at global-track-trace: 2024-01-03T14:18:00Z, Departure from outward office of exchange, MYKULC
+UD656337373MY found at malaysia-post: 2023-12-29T10:21:31Z, Item Sent to Namibia, In Transit
+LP610391713MY found at global-track-trace: 2024-01-15T15:03:00Z, Departure from outward office of exchange, MYJHBB
+LP610391713MY found at malaysia-post: 2024-02-05T10:59:00Z, Departed from International Hub to domestic location
+```
+
+> Почта России отвалилась по таймауту, так как она заблокировала мой ip адрес за злоупотребление запросами :)
 
 <h3 id="h5">
 Как это работает
