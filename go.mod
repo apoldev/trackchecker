@@ -37,6 +37,7 @@ require (
 	github.com/BurntSushi/toml v1.2.1 // indirect
 	github.com/Shopify/sarama v1.38.0 // indirect
 	github.com/andybalholm/cascadia v1.3.1 // indirect
+	github.com/araddon/dateparse v0.0.0-20210429162001-6b43995a97de // indirect
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20230717121745-296ad89f973d // indirect

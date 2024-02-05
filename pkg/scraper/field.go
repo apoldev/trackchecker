@@ -1,5 +1,7 @@
 package scraper
 
+import "github.com/apoldev/trackchecker/pkg/scraper/transform"
+
 const (
 	FieldTypeCommon = ""
 	FieldTypeObject = "object"
@@ -18,4 +20,7 @@ type Field struct {
 
 	// Object is used for FieldTypeObject
 	Object []*Field `json:"object,omitempty"`
+
+	// Transformers is a list of transformers to apply to the field.
+	Transformers transform.Transformers `json:"transformers,omitempty"`
 }
