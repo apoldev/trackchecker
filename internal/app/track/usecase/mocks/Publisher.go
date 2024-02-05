@@ -13,17 +13,17 @@ type Publisher struct {
 	mock.Mock
 }
 
-// Publish provides a mock function with given fields: ctx, message
-func (_m *Publisher) Publish(ctx context.Context, message []byte) error {
-	ret := _m.Called(ctx, message)
+// Publish provides a mock function with given fields: ctx, topic, message
+func (_m *Publisher) Publish(ctx context.Context, topic string, message []byte) error {
+	ret := _m.Called(ctx, topic, message)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Publish")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, []byte) error); ok {
-		r0 = rf(ctx, message)
+	if rf, ok := ret.Get(0).(func(context.Context, string, []byte) error); ok {
+		r0 = rf(ctx, topic, message)
 	} else {
 		r0 = ret.Error(0)
 	}

@@ -15,6 +15,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var topic string = "topicName"
+
 func TestTracking_Tracking(t *testing.T) {
 	cases := []struct {
 		name           string
@@ -62,7 +64,7 @@ func TestTracking_Tracking(t *testing.T) {
 			crawlerMock := mocks.NewCrawler(t)
 			logger := logrus.New()
 
-			tracking := usecase.NewTracking(publisherMock, logger, crawlerMock, trackResultMock)
+			tracking := usecase.NewTracking(publisherMock, topic, logger, crawlerMock, trackResultMock)
 
 			crawlerMock.On("Start", c.trackingNumber).
 				Return(c.results, c.expectError).
@@ -113,7 +115,7 @@ func TestTracking_GetTrackingResult(t *testing.T) {
 			crawlerMock := mocks.NewCrawler(t)
 			logger := logrus.New()
 
-			tracking := usecase.NewTracking(publisherMock, logger, crawlerMock, trackResultMock)
+			tracking := usecase.NewTracking(publisherMock, topic, logger, crawlerMock, trackResultMock)
 
 			ctx := context.Background()
 
@@ -173,7 +175,7 @@ func TestTracking_SaveTrackingResult(t *testing.T) {
 			crawlerMock := mocks.NewCrawler(t)
 			logger := logrus.New()
 
-			tracking := usecase.NewTracking(publisherMock, logger, crawlerMock, trackResultMock)
+			tracking := usecase.NewTracking(publisherMock, topic, logger, crawlerMock, trackResultMock)
 
 			track := &models.TrackingNumber{
 				Code: c.trackingNumber,
@@ -203,7 +205,7 @@ func TestTracking_PublishTrackingNumberToQueue(t *testing.T) {
 	trackResultMock := mocks.NewTrackResultRepo(t)
 	crawlerMock := mocks.NewCrawler(t)
 	logger := logrus.New()
-	tracking := usecase.NewTracking(publisherMock, logger, crawlerMock, trackResultMock)
+	tracking := usecase.NewTracking(publisherMock, topic, logger, crawlerMock, trackResultMock)
 
 	expextError := "error publish tracking number to queue"
 
@@ -219,7 +221,7 @@ func TestTracking_PublishTrackingNumberToQueue(t *testing.T) {
 
 	ctx := context.Background()
 	publisherMock.
-		On("Publish", ctx, mock.Anything).
+		On("Publish", ctx, topic, mock.Anything).
 		Return(nil).
 		Once()
 
@@ -233,7 +235,7 @@ func TestTracking_PublishTrackingNumberToQueue(t *testing.T) {
 
 	// test error
 	publisherMock.
-		On("Publish", ctx, mock.Anything).
+		On("Publish", ctx, topic, mock.Anything).
 		Return(errors.New(expextError)).
 		Once()
 
