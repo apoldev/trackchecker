@@ -12,28 +12,37 @@ import (
 func TestResultBuilder(t *testing.T) {
 	b := NewResultBuilder()
 
-	assert.Equal(t, b.GetData(), []byte("{}"))
-	assert.Equal(t, b.GetString(), "{}")
+	assert.Equal(t, []byte("{}"), b.GetData())
+	assert.Equal(t, "{}", b.GetString())
 
 	b.Set("a.0.b", 777)
 
-	assert.Equal(t, b.GetString(), `{"a":[{"b":777}]}`)
+	assert.Equal(t, `{"a":[{"b":777}]}`, b.GetString())
 
 	// error case
 	b.Set("a.0.b", json.RawMessage{0, 1, 2})
-	assert.Equal(t, b.GetString(), `{"a":[{"b":777}]}`)
+	assert.Equal(t, `{"a":[{"b":777}]}`, b.GetString())
 
 	b.Set("a.1.b", "New York...")
-	require.Equal(t, b.GetString(), `{"a":[{"b":777},{"b":"New York..."}]}`)
+	require.Equal(t, `{"a":[{"b":777},{"b":"New York..."}]}`, b.GetString())
 
 	b.Set("a.1.b", "New York...", transform.Transformer{
 		Type: transform.TypeClean,
 	})
-	require.Equal(t, b.GetString(), `{"a":[{"b":777},{"b":"New York"}]}`)
+	require.Equal(t, `{"a":[{"b":777},{"b":"New York"}]}`, b.GetString())
 
 	b.Set("a.2.b", "January 29, 2024 8:03 pm", transform.Transformer{
 		Type: transform.TypeDate,
 	})
-	require.Equal(t, b.GetString(), `{"a":[{"b":777},{"b":"New York"},{"b":"2024-01-29T20:03:00Z"}]}`)
+	require.Equal(t, `{"a":[{"b":777},{"b":"New York"},{"b":"2024-01-29T20:03:00Z"}]}`, b.GetString())
+
+	b.Set("a.2.b", "x.x", transform.Transformer{
+		Type: transform.TypeReplaceString,
+		Params: map[string]string{
+			"old": ".",
+			"new": "---",
+		},
+	}, transform.Transformer{Type: transform.TypeDate})
+	require.Equal(t, `{"a":[{"b":777},{"b":"New York"},{"b":"x---x"}]}`, b.GetString())
 
 }
