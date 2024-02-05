@@ -2,6 +2,8 @@ package scraper
 
 import (
 	"encoding/json"
+	"github.com/apoldev/trackchecker/pkg/scraper/transform"
+	"github.com/stretchr/testify/require"
 	"testing"
 
 	"github.com/go-playground/assert/v2"
@@ -20,4 +22,18 @@ func TestResultBuilder(t *testing.T) {
 	// error case
 	b.Set("a.0.b", json.RawMessage{0, 1, 2})
 	assert.Equal(t, b.GetString(), `{"a":[{"b":777}]}`)
+
+	b.Set("a.1.b", "New York...")
+	require.Equal(t, b.GetString(), `{"a":[{"b":777},{"b":"New York..."}]}`)
+
+	b.Set("a.1.b", "New York...", transform.Transformer{
+		Type: transform.TypeClean,
+	})
+	require.Equal(t, b.GetString(), `{"a":[{"b":777},{"b":"New York"}]}`)
+
+	b.Set("a.2.b", "January 29, 2024 8:03 pm", transform.Transformer{
+		Type: transform.TypeDate,
+	})
+	require.Equal(t, b.GetString(), `{"a":[{"b":777},{"b":"New York"},{"b":"2024-01-29T20:03:00Z"}]}`)
+
 }

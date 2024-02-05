@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/apoldev/trackchecker/pkg/scraper/transform"
+
 	"github.com/apoldev/trackchecker/pkg/scraper/document"
 	"github.com/tidwall/sjson"
 )
@@ -57,10 +59,13 @@ func (b *ResultBuilder) GetData() []byte {
 	return b.data
 }
 
-func (b *ResultBuilder) Set(path string, value interface{}) {
+func (b *ResultBuilder) Set(path string, value interface{}, transformers ...transform.Transformer) {
 	var err error
 	var newdata []byte
 
+	if v, ok := value.(string); ok {
+		value = b.applyTransformers(v, transformers)
+	}
 	newdata, err = sjson.SetBytes(b.data, path, value)
 
 	if err != nil {
@@ -68,4 +73,17 @@ func (b *ResultBuilder) Set(path string, value interface{}) {
 	}
 
 	b.data = newdata
+}
+
+func (b *ResultBuilder) applyTransformers(data string, transformers []transform.Transformer) string {
+	str := data
+	for _, transformer := range transformers {
+		switch transformer.Type {
+		case transform.TypeClean:
+			str = transform.Clean(str)
+		case transform.TypeDate:
+			str = transform.Date(str)
+		}
+	}
+	return str
 }

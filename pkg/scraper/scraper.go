@@ -181,7 +181,7 @@ func (t *Task) parseDoc(doc document.Document, builder *ResultBuilder, field *Fi
 		if err != nil {
 			return err
 		}
-		builder.Set(path, node.Value())
+		builder.Set(path, node.Value(), field.Transformers...)
 	}
 
 	return nil

@@ -48,11 +48,19 @@
               },
               {
                 "path":"date",
-                "query":"EventDT"
+                "query":"EventDT",
+                "transformers": [{
+                    "type": "regexp",
+                    "params": {
+                      "pattern": "([0-9]{4}-[0-9]{2}-[0-9]{2})T([0-9]{2}:[0-9]{2}:[0-9]{2})",
+                      "replace": "$1 $2"
+                    }
+                }, "date"]
               },
               {
                 "path":"place",
-                "query":"EventLocation"
+                "query":"EventLocation",
+                "transformers": ["clean"]
               }
             ]
           }
@@ -92,11 +100,13 @@
               },
               {
                 "path":"date",
-                "query":"concat(./EventDate,' ', ./EventTime)"
+                "query":"concat(./EventDate,' ', ./EventTime)",
+                "transformers": ["date", "clean"]
               },
               {
                 "path":"place",
-                "query":"concat(./EventCity,', ', ./EventState, ' ', ./EventZIPCode)"
+                "query":"concat(./EventCity,', ', ./EventState, ' ', ./EventZIPCode)",
+                "transformers": ["clean"]
               },
               {
                 "path":"country",
