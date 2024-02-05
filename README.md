@@ -8,15 +8,19 @@ TrackChecker - приложение для отслеживания посыло
 
 Для примера здесь также реализовано мини-ядро парсера, которое принимает конфигурацию для парсера простых сайтов/api, отдающих xml, json, html.
 
-#### [Подробнее в разделе Как это работает](#h5)
+#### [Подробнее в разделе Как это работает](#h6)
 
 ### Содержание
 ___
-#### [Использовано в разработке](#h1)
-#### [Как посмотреть в бою](#h3)
-#### [Как запустить локально](#h4)
-#### [Как это работает](#h5)
-#### [Добавленные парсеры](#h6)
+- #### [Использовано в разработке](#h1)
+- #### [Как посмотреть в бою](#h3)
+- #### [Как запустить локально](#h4)
+  - #### [Демо клиент](#h5)
+  - #### [Результат работы демо клиента](#h51)
+  - #### [Пример запроса](#h52)
+  - #### [Пример ответа](#h53)
+- #### [Как это работает](#h6)
+- #### [Добавленные парсеры](#h7)
 
 <h3 id="h1">
 Использовал в разработке
@@ -40,7 +44,7 @@ ___
 * Docker Swarm кластер
 
 <h3 id="h3">
-Как посмотреть
+Как посмотреть в бою
 </h3>
 
 ___
@@ -62,7 +66,7 @@ docker-compose up
 swagger generate server --exclude-main -f ./api/swagger.yaml -t ./internal/app/restapi --exclude-main
 ```
 
-<h3>Демонстрация</h3>
+<h3 id="h5">Демо клиент</h3>
 
 _Требуется предварительно запустить основное приложение командой выше_
 
@@ -74,7 +78,7 @@ go run ./cmd/client/main.go
 
 > Важно! Многие иностранные сайты не позволяют делать запросы с российских ip адресов. Поэтому, если вы запустите демо-клиент с российского ip, то вам частично могут вернуться пустые результаты или отмененные по таймауту.
 
-<h4>Результат работы демо клиента</h4>
+<h4 id="h51">Результат работы демо клиента</h4>
 
 ___
 
@@ -133,7 +137,144 @@ LP610391713MY found at malaysia-post: 2024-02-05T10:59:00Z, Departed from Intern
 
 > Почта России отвалилась по таймауту, так как она заблокировала мой ip адрес за злоупотребление запросами :)
 
-<h3 id="h5">
+
+<h4 id="h52">Пример запроса</h4>
+___
+```json
+{
+    "tracking_numbers": [
+        "LH256986182AU",
+        "UD656337373MY"
+    ]
+}
+```
+
+<h4 id="h53">Пример ответа</h4>
+___
+
+```json
+{
+  "data": [
+    {
+      "code": "UD656337373MY",
+      "id": "50047d80-1880-4071-953f-b3bec70c3a91",
+      "results": [
+        {
+          "execute_time": 0.017348659,
+          "result": {
+            "CountryTo": "NA",
+            "CountryFrom": "MY",
+            "events": [
+              {
+                "status": "Departure from outward office of exchange",
+                "date": "2024-01-03T14:18:00Z",
+                "place": "MYKULC"
+              }
+            ]
+          },
+          "spider": "global-track-trace",
+          "tracking_number": "UD656337373MY"
+        },
+        {
+          "execute_time": 0.843198383,
+          "result": {
+            "events": [
+              {
+                "status": "Item Sent to Namibia",
+                "date": "2023-12-29T10:21:31Z",
+                "place": "In Transit"
+              },
+              {
+                "status": "Item Posted Over The Counter to Namibia",
+                "date": "2023-12-29T09:45:49Z",
+                "place": "In Transit"
+              },
+              {
+                "status": "Dispatch PreAlert to Namibia",
+                "date": "2023-12-26T15:02:53Z",
+                "place": "In Transit"
+              }
+            ]
+          },
+          "spider": "malaysia-post",
+          "tracking_number": "UD656337373MY"
+        }
+      ],
+      "status": "finish",
+      "uuid": "ffd8c81b-9804-4622-9e21-48f15ae69e55"
+    },
+    {
+      "code": "LH256986182AU",
+      "id": "50047d80-1880-4071-953f-b3bec70c3a91",
+      "results": [
+        {
+          "error": "unexpected end of JSON input",
+          "execute_time": 0.246106831,
+          "result": null,
+          "spider": "global-track-trace",
+          "tracking_number": "LH256986182AU"
+        },
+        {
+          "execute_time": 1.242484113,
+          "result": {
+            "SignedBy": "Acp602 Mailroom",
+            "events": [
+              {
+                "status": "Picked up/Collected",
+                "date": "2023-07-24T11:44:00Z",
+                "details": "Your item has been collected by the overseas postal service and is en route to their depot"
+              },
+              {
+                "status": "International departure",
+                "date": "2023-07-28T04:21:00Z",
+                "place": "BRISBANE",
+                "details": "Departure from country of origin. Your item is in transit to New Zealand"
+              },
+              {
+                "status": "International arrival",
+                "date": "2023-07-31T19:17:04Z",
+                "place": "AUCKLAND",
+                "details": "Your item has arrived in New Zealand"
+              },
+              {
+                "status": "In transit to local depot",
+                "date": "2023-07-31T23:21:16Z",
+                "place": "AUCKLAND",
+                "details": "Your item has left our International Mail Centre in Auckland and is on its way to a local/regional delivery depot"
+              },
+              {
+                "status": "At local/regional depot",
+                "date": "2023-08-01T11:45:22Z",
+                "place": "Auckland (Ak Central/East Depot)",
+                "details": "Your item has been sorted at a parcel depot"
+              },
+              {
+                "status": "With courier for delivery",
+                "date": "2023-08-01T17:53:44Z",
+                "place": "Auckland (Ak City CP Depot)",
+                "details": "Your item is with a courier for delivery"
+              },
+              {
+                "status": "Delivery Complete",
+                "date": "2023-08-01T18:48:26Z",
+                "place": "Auckland (Ak City CP Depot)",
+                "details": "Your item has been successfully delivered and was signed for by \"Acp602 Mailroom\""
+              }
+            ]
+          },
+          "spider": "new-zealand-post",
+          "tracking_number": "LH256986182AU"
+        }
+      ],
+      "status": "finish",
+      "uuid": "a105efb8-e409-4ebb-a796-92bd5d073e42"
+    }
+  ],
+  "status": true
+}
+```
+
+<h3 id="h6">
 Как это работает
 </h3>
 
@@ -203,7 +344,7 @@ ___
 }
 ```
 
-<h3 id="h6">Добавленные почтовые службы</h3>
+<h3 id="h7">Добавленные почтовые службы</h3>
 
 ___
 
