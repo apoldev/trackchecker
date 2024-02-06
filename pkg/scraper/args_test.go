@@ -45,4 +45,14 @@ func TestResultBuilder(t *testing.T) {
 	}, transform.Transformer{Type: transform.TypeDate})
 	require.Equal(t, `{"a":[{"b":777},{"b":"New York"},{"b":"x---x"}]}`, b.GetString())
 
+	// test replace transformer with regexp
+	b.Set("a.2.b", "abcdefg00932", transform.Transformer{
+		Type: transform.TypeReplaceRegexp,
+		Params: map[string]string{
+			"regexp": "^(.*?)([0-9]+)$",
+			"new":    "$2$1",
+		},
+	})
+	require.Equal(t, `{"a":[{"b":777},{"b":"New York"},{"b":"00932abcdefg"}]}`, b.GetString())
+
 }

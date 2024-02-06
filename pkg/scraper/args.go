@@ -85,6 +85,8 @@ func (b *ResultBuilder) applyTransformers(data string, transformers []transform.
 			str = transform.Date(str)
 		case transform.TypeReplaceString:
 			str = transform.ReplaceStr(str, transformer.Params["old"], transformer.Params["new"])
+		case transform.TypeReplaceRegexp:
+			str = transform.ReplaceRegexp(str, transformer.Params["regexp"], transformer.Params["new"])
 		}
 	}
 	return str

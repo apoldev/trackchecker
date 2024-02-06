@@ -6,11 +6,12 @@ const (
 	TypeClean         = "clean"
 	TypeDate          = "date"
 	TypeReplaceString = "replace.string"
+	TypeReplaceRegexp = "replace.regexp"
 )
 
 type Transformer struct {
-	Type   string
-	Params map[string]string
+	Type   string            `json:"type,omitempty"`
+	Params map[string]string `json:"params,omitempty"`
 }
 
 type Transformers []Transformer
