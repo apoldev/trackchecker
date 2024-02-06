@@ -507,5 +507,103 @@
         }
       }
     ]
+  },
+  {
+    "code":"cdek",
+    "masks": [
+      "1[345][0-9]{8}",
+      "CN[A-Z0-9]+RU[0-9]{1}"
+    ],
+    "tasks":[
+      {
+        "type":"request",
+        "payload":"https://mobile-apps.cdek.ru/api/v2/order/[track]",
+        "params":{
+          "headers":{
+            "Accept-Language":"ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
+            "User-Agent":"CDEK/2.5 (com.cdek.cdekapp; build:1; iOS 13.3.1) Alamofire/4.9.1",
+            "X-User-Lang":"ru"
+          },
+          "method":"GET",
+          "type":"json.xpath"
+        },
+        "field":{
+        }
+      },
+      {
+        "type":"query",
+        "payload":"concat(//office/city/name,', ', //office/address)",
+        "field":{
+          "path":"AddressTo"
+        }
+      },
+      {
+        "type":"query",
+        "payload":"//office/latitude",
+        "field":{
+          "path":"delivery_office.latitude"
+        }
+      },
+      {
+        "type":"query",
+        "payload":"//office/longitude",
+        "field":{
+          "path":"delivery_office.longitude"
+        }
+      },
+      {
+        "type":"query",
+        "payload":"//realWeight",
+        "field":{
+          "path":"Weight"
+        }
+      },
+      {
+        "type":"query",
+        "payload":"//additionalInfo//goods/*/name",
+        "field":{
+          "path":"Goods",
+          "type":"array"
+        }
+      },
+      {
+        "type":"query",
+        "payload":"(//orderStatusGroups/* | //orderStatusGroups//statuses/*)",
+        "field":{
+          "path":"events",
+          "type":"array",
+          "element":{
+            "type":"object",
+            "object":[
+              {
+                "path":"status",
+                "query":"./title"
+              },
+              {
+                "path":"date",
+                "query":"./date",
+                "transformers":[
+                  {
+                    "type":"replace.regexp",
+                    "params":{
+                      "new":"$3-$2-$1",
+                      "regexp":"(\\d+)\\.(\\d+)\\.(\\d+)"
+                    }
+                  },
+                  {
+                    "type":"date",
+                    "params":null
+                  }
+                ]
+              },
+              {
+                "path":"place",
+                "query":"../../city"
+              }
+            ]
+          }
+        }
+      }
+    ]
   }
 ]

@@ -4,7 +4,7 @@
 
 TrackChecker - приложение для отслеживания посылок из различных почтовых и курьерских служб.
 
-Это приложение является примером работы с GRPC, NATS, Kafka, RabbitMQ, Swagger, Docker, Docker Swarm, CI/CD, и другими технологиями в golang.
+Это приложение является примером работы с GRPC, NATS, Kafka, RabbitMQ, Swagger, Docker, Docker Swarm, Github Actions, и другими технологиями в golang.
 
 Для примера здесь также реализовано мини-ядро парсера, которое принимает конфигурацию для парсера простых сайтов/api, отдающих xml, json, html.
 
@@ -19,29 +19,51 @@ ___
   - #### [Результат работы демо клиента](#h51)
   - #### [Пример запроса](#h52)
   - #### [Пример ответа](#h53)
+  
 - #### [Как это работает](#h6)
-- #### [Добавленные парсеры](#h7)
+  - #### [Парсер](#h7)
+    - #### [Пример декларативного описания парсера Почты США в JSON](#h71)
+    - #### [Пример парсера CDEK на golang](#h72)
+  - #### [Демо приложение для парсинга посылок в CDEK](#h8)
+  - #### [Добавленные парсеры](#h99)
 
 <h3 id="h1">
 Использовал в разработке
 </h3>
 
 ___
+* Технологии
+  * [Golang](https://golang.org/)
+  * [Docker](https://www.docker.com/)
+  * [NATS (JetStream)](https://docs.nats.io/nats-concepts/jetstream)
+  * [Kafka](https://kafka.apache.org/)
+  * [Swagger](https://swagger.io/)
+  * [GRPC](https://grpc.io/)
+  * [Redis](https://redis.io/)
+  
 
-* [Swagger, go-swagger](https://github.com/go-swagger/go-swagger) - для генерации http сервера из swagger.yml
-* [GRPC](https://github.com/grpc/grpc-go)
-* [NATS (JetStream)](https://github.com/nats-io/nats.go) - библиотека для работы с брокером сообщений NATS
-* [Kafka, Watermill](https://watermill.io/) - библиотека для работы с Kafka, RabbitMQ, etc...
-* [Redis](https://github.com/redis/go-redis) - redis клиент для golang
-* [Testify](https://github.com/stretchr/testify) - тестирование
-* [Mockery](https://github.com/vektra/mockery) - для генерации моков
-* [Xpath](https://github.com/antchfx/xpath) - для парсера html, json, xml документов
-* [Goquery](https://github.com/PuerkitoBio/goquery) - для парсера html документов
-* [Gjson](https://github.com/tidwall/gjson) - для парсера json документов
-* [Sjson](https://github.com/tidwall/sjson) - для записи в json документ
-* GitHub Action
-* Docker
-* Docker Swarm кластер
+* Разработка
+  * [CompileDaemon](https://github.com/githubnemo/CompileDaemon) - для автоматической пересборки приложения в контейнере
+  * [go-swagger](https://github.com/go-swagger/go-swagger) - для генерации http сервера из swagger.yml
+  * [xpath](https://github.com/antchfx/xpath) - для парсера html, json, xml документов
+  * [goquery](https://github.com/PuerkitoBio/goquery) - для парсера html документов
+  * [gjson](https://github.com/tidwall/gjson) - для парсера json документов
+  * [sjson](https://github.com/tidwall/sjson) - для записи в json документ
+  * [grpc-go](https://github.com/grpc/grpc-go)
+  * [nats.go](https://github.com/nats-io/nats.go) - библиотека для работы с брокером сообщений NATS
+  * [watermill](https://watermill.io/) - библиотека для работы с Kafka, RabbitMQ, etc...
+  * [go-redis](https://github.com/redis/go-redis) - redis клиент для golang
+  
+  * Тестирование
+    * [Testify](https://github.com/stretchr/testify) - тестирование
+    * [Mockery](https://github.com/vektra/mockery) - для генерации моков
+
+* Deploy
+  * [Traefik](https://doc.traefik.io/traefik/)
+  * GitHub Action
+  * Docker
+  * Docker Swarm
+
 
 <h3 id="h3">
 Как посмотреть в бою
@@ -138,19 +160,50 @@ LP610391713MY found at malaysia-post: 2024-02-05T10:59:00Z, Departed from Intern
 > Почта России отвалилась по таймауту, так как она заблокировала мой ip адрес за злоупотребление запросами :)
 
 
-<h4 id="h52">Пример запроса</h4>
+<h4 id="h52">Пример запроса POST</h4>
 ___
 
-```json
-{
+```bash
+curl --location 'http://localhost:7777/track' \
+--header 'Content-Type: application/json' \
+--data '{
     "tracking_numbers": [
         "LH256986182AU",
         "UD656337373MY"
     ]
+}'
+```
+
+
+<h4>Пример ответа</h4>
+___
+
+```json
+{
+  "tracking_numbers": [
+    {
+      "code": "LH256986182AU",
+      "uuid": "50047d80-1880-4071-953f-b3bec70c3a91"
+    },
+    {
+      "code": "UD656337373MY",
+      "uuid": "50047d80-1880-4071-953f-b3bec70c3a91"
+    }
+  ],
+  "tracking_id": "4a89c077-20b7-447c-86b7-dc93582af6b2"
 }
 ```
 
-<h4 id="h53">Пример ответа</h4>
+
+<h4>Пример запроса на получение результатов</h4>
+
+___
+
+```bash
+curl --location 'http://localhost:7777/track?id=4a89c077-20b7-447c-86b7-dc93582af6b2'
+```
+
+<h4 id="h53">Пример ответа на получение результатов</h4>
 ___
 
 ```json
@@ -288,12 +341,18 @@ ___
 5. Результаты складываются в HSET Redis.
 6. Клиент через некоторое время запрашивает результаты запроса.
 
+
+<h3 id="h7">Парсеры</h3>
+
+___
+
 Сами парсеры представляют из себя структуру, деклараттивно описывающую "как парсить", в которых указана последовательность действий для выполнения http запросов и дальнейшего парсинга этого документа с помощью:
 * [xpath](https://github.com/antchfx/xpath) для html, xml, json
 * [goquery](https://github.com/PuerkitoBio/goquery) для html
 * [gjson](https://github.com/tidwall/gjson) запросы для json
 
-Пример декларативного описания парсера для Почты США (USPS):
+<h3 id="h71">Пример декларативного описания парсера для Почты США (USPS)</h3>
+
 ```json
 {
   "code":"usps",
@@ -345,7 +404,261 @@ ___
 }
 ```
 
-<h3 id="h7">Добавленные почтовые службы</h3>
+<h3 id="h72">Пример декларативного описания парсера для CDEK (golang)</h3>
+
+```go
+cdek := models.Spider{
+		Scraper: scraper.Scraper{
+			Code: "cdek",
+			Tasks: []scraper.Task{
+				{
+					Type:    scraper.TaskTypeRequest,
+					Payload: `https://mobile-apps.cdek.ru/api/v2/order/[track]`,
+					Params: map[string]interface{}{
+						"type":   scraper.JSONXpath,
+						"method": "GET",
+						"headers": map[string]string{
+							"User-Agent":      "CDEK/2.5 (com.cdek.cdekapp; build:1; iOS 13.3.1) Alamofire/4.9.1",
+							"Accept-Language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
+							"X-User-Lang":     "ru",
+						},
+					},
+				},
+				{
+					Type:    scraper.TaskTypeQuery,
+					Payload: `concat(//office/city/name,', ', //office/address)`,
+					Field: scraper.Field{
+						Path: "AddressTo",
+					},
+				},
+				{
+					Type:    scraper.TaskTypeQuery,
+					Payload: `//office/latitude`,
+					Field: scraper.Field{
+						Path: "delivery_office.latitude",
+					},
+				},
+				{
+					Type:    scraper.TaskTypeQuery,
+					Payload: `//office/longitude`,
+					Field: scraper.Field{
+						Path: "delivery_office.longitude",
+					},
+				},
+				{
+					Type:    scraper.TaskTypeQuery,
+					Payload: `//realWeight`,
+					Field: scraper.Field{
+						Path: "Weight",
+					},
+				},
+				{
+					Type:    scraper.TaskTypeQuery,
+					Payload: `//additionalInfo//goods/*/name`,
+					Field: scraper.Field{
+						Path: "Goods",
+						Type: scraper.FieldTypeArray,
+					},
+				},
+				{
+					Type:    scraper.TaskTypeQuery,
+					Payload: `(//orderStatusGroups/* | //orderStatusGroups//statuses/*)`,
+					Field: scraper.Field{
+						Path: "events",
+						Type: scraper.FieldTypeArray,
+						Element: &scraper.Field{
+							Type: scraper.FieldTypeObject,
+							Object: []*scraper.Field{
+								{
+									Path:  "status",
+									Query: "./title",
+								},
+								{
+									Path:  "date",
+									Query: "./date",
+									Transformers: []transform.Transformer{
+										{
+											Type: transform.TypeReplaceRegexp,
+											Params: map[string]string{
+												"regexp": "(\\d+)\\.(\\d+)\\.(\\d+)",
+												"new":    "$3-$2-$1",
+											},
+										},
+										{
+											Type: transform.TypeDate,
+										},
+									},
+								},
+								{
+									Path:  "place",
+									Query: "../../city",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		RegexpMasks: []*regexp.Regexp{
+			regexp.MustCompile(`^(\d{10})$`),
+			regexp.MustCompile(`^CN[A-Z0-9]+RU[0-9]{1}$`),
+		},
+	}
+```
+
+<h3>Пример результата выполнения парсера CDEK</h3>
+
+___
+
+```json
+{
+    "data": [
+        {
+            "code": "1515005006",
+            "id": "fa11f3df-31fa-459d-bb4b-74db37c4055e",
+            "results": [
+                {
+                    "execute_time": 0.93600475,
+                    "result": {
+                        "AddressTo": "Пермь, ул. Карбышева, 41",
+                        "delivery_office": {
+                            "latitude": 58.109423,
+                            "longitude": 56.311702
+                        },
+                        "Weight": 1.55,
+                        "Goods": [
+                            "Штаны  TOMMY HILFIGER, Pink Dream, S",
+                            "Свитшот  TOMMY HILFIGER, Pink Dream, S",
+                            "Лонгслив  TOMMY HILFIGER, Navy, M",
+                            "Свитшот  TOMMY HILFIGER, Beige Heather, M"
+                        ],
+                        "events": [
+                            {
+                                "status": "Создан",
+                                "date": "2024-01-27T00:00:00Z"
+                            },
+                            {
+                                "status": "В пути",
+                                "date": "2024-01-27T00:00:00Z"
+                            },
+                            {
+                                "status": "Готов к выдаче"
+                            },
+                            {
+                                "status": "Вручен"
+                            },
+                            {
+                                "status": "Принят на доставку",
+                                "date": "2024-01-27T00:00:00Z",
+                                "place": "Нью-Касл"
+                            },
+                            {
+                                "status": "Отправлено в г. Нью-Йорк",
+                                "date": "2024-01-30T00:00:00Z",
+                                "place": "Нью-Касл"
+                            },
+                            {
+                                "status": "Отправлено в г. Москва",
+                                "date": "2024-02-03T00:00:00Z",
+                                "place": "Нью-Йорк"
+                            },
+                            {
+                                "status": "Таможенное оформление в стране отправления",
+                                "date": "2024-02-03T00:00:00Z",
+                                "place": "Нью-Йорк"
+                            },
+                            {
+                                "status": "Отправлен в страну назначения",
+                                "date": "2024-02-03T00:00:00Z",
+                                "place": "Нью-Йорк"
+                            }
+                        ]
+                    },
+                    "spider": "cdek",
+                    "tracking_number": "1515005006"
+                }
+            ],
+            "status": "finish",
+            "uuid": "4fa08adc-161f-4f69-b89c-a09453a5083b"
+        }
+    ],
+    "status": true
+}
+```
+
+<h3 id="h8">Демо приложение для парсинга посылок в CDEK</h3>
+
+___
+
+Для запуска демо приложения для парсинга посылок в CDEK выполните команду:
+
+```bash
+go run ./cmd/cdek-scrape-example/main.go
+```
+
+
+<h3>Результат выполнения:</h3>
+
+
+```text
++----+------------------+-------------------------+------------+-----------------------------------------------+----------------------+------------------------------------------------------------+
+| #  | TRACKING NUMBER  | GOODS                   | WEIGHT, KG | TO                                            | OFFICE COORDS        | EVENT                                                      |
++----+------------------+-------------------------+------------+-----------------------------------------------+----------------------+------------------------------------------------------------+
+| 1  | 1515005006       | Штаны  TOMMY HILFIGE... | 1.55       | Пермь, ул. Карбышева, 41                      | 58.109423, 56.311702 | 2024-02-03T00:00:00Z, Отправлен в страну назначения        |
+|    |                  | Свитшот  TOMMY HILFI... |            |                                               |                      |                                                            |
+|    |                  | Лонгслив  TOMMY HILF... |            |                                               |                      |                                                            |
+|    |                  | Свитшот  TOMMY HILFI... |            |                                               |                      |                                                            |
+|    |                  |                         |            |                                               |                      |                                                            |
+|    |                  |                         |            |                                               |                      |                                                            |
+| 2  | 1340837686       | Чайно-гибридная роза... | 5.52       | Ханты-Мансийск, ул. Гагарина, 151             | 60.98531, 69.040075  | 2022-06-20T00:00:00Z, Поступил. Заберите заказ             |
+|    |                  | Чайно-гибридная роза... |            |                                               |                      |                                                            |
+|    |                  | Чайно-гибридная роза... |            |                                               |                      |                                                            |
+|    |                  | Royal Edward (Роял Э... |            |                                               |                      |                                                            |
+|    |                  | Чайно-гибридная роза... |            |                                               |                      |                                                            |
+|    |                  | Чайно-гибридная роза... |            |                                               |                      |                                                            |
+|    |                  | Чайно-гибридная роза... |            |                                               |                      |                                                            |
+|    |                  | Кустовая роза Сфинкс... |            |                                               |                      |                                                            |
+|    |                  | J.P. Connell (Дж.П. ... |            |                                               |                      |                                                            |
+|    |                  | Кустовая роза Ламбад... |            |                                               |                      |                                                            |
+|    |                  |                         |            |                                               |                      |                                                            |
+|    |                  |                         |            |                                               |                      |                                                            |
+| 3  | 1517180126       |                         | 69.2       | Дербент, Дербентский район, ул. Гагарина, 105 | 42.077294, 48.268322 | 2024-02-05T00:00:00Z, Отправлено в г. Грозный, г/о Грозный |
+|    |                  |                         |            |                                               |                      |                                                            |
+|    |                  |                         |            |                                               |                      |                                                            |
+| 4  | CN0008610350RU9  | connector               | 0.03       | Тульский, Майкопский район, ул. Школьная, 35  | 44.507598, 40.175983 | 2024-02-06T00:00:00Z, Поступил. Заберите заказ             |
+|    |                  |                         |            |                                               |                      |                                                            |
+|    |                  |                         |            |                                               |                      |                                                            |
+| 5  | 1490020945       | 80714-A1004N5           | 0.73       | Астрахань, ул. Николая Ветошникова, 11        | 46.311615, 47.966901 | 2023-12-27T00:00:00Z, Поступил. Заберите заказ             |
+|    |                  |                         |            |                                               |                      |                                                            |
+|    |                  |                         |            |                                               |                      |                                                            |
+| 6  | 1516134320       | А700/4 Пальто  Эшли ... | 0.8        | Армавир, м/о Армавир, ул. Советской Армии, 97 | 44.989987, 41.097754 | 2024-02-06T00:00:00Z, Отправлен в пункт выдачи             |
+|    |                  |                         |            |                                               |                      |                                                            |
+|    |                  |                         |            |                                               |                      |                                                            |
+| 7  | 1517556629       | 0                       | 1          | Барнаул, ул. Попова, 82                       | 53.368631, 83.675715 | 2024-02-05T00:00:00Z, Отправлено в г. Новосибирск          |
+|    |                  |                         |            |                                               |                      |                                                            |
+|    |                  |                         |            |                                               |                      |                                                            |
+| 8  | 1516621181       | Станок для рукоделия    | 3          | Всеволожск, ул. Александровская, 81 1         | 60.029912, 30.629191 | 2024-02-06T00:00:00Z, Прибыл в сортировочный центр         |
+|    |                  |                         |            |                                               |                      |                                                            |
+|    |                  |                         |            |                                               |                      |                                                            |
+| 9  | 1515939433       | Крыло                   | 9          | Богданович, ул. Мира, 11А                     | 56.768971, 62.056042 | 2024-02-05T00:00:00Z, Поступил. Заберите заказ             |
+|    |                  | Пороги                  |            |                                               |                      |                                                            |
+|    |                  |                         |            |                                               |                      |                                                            |
+|    |                  |                         |            |                                               |                      |                                                            |
+| 10 | 1516783111       | Запчасти                | 0.6        | Грозный, г/о Грозный, ул. А.А.Айдамирова, 82  | 43.336609, 45.695549 | 2024-02-06T00:00:00Z, Отправлен в пункт выдачи             |
+|    |                  |                         |            |                                               |                      |                                                            |
+|    |                  |                         |            |                                               |                      |                                                            |
+| 11 | 1516835272       | форма силиконовая       | 0.9        | Вологда, ул. Благовещенская, 35               | 59.221265, 39.876907 | 2024-02-05T00:00:00Z, Отправлено в г. Москва               |
+|    |                  |                         |            |                                               |                      |                                                            |
+|    |                  |                         |            |                                               |                      |                                                            |
+| 12 | 1517550130       | одежда                  | 0.7        | Челябинск, ул. Цвиллинга, 90                  | 55.143615, 61.412888 | 2024-02-06T00:00:00Z, Отправлено в г. Челябинск            |
+|    |                  |                         |            |                                               |                      |                                                            |
+|    |                  |                         |            |                                               |                      |                                                            |
+| 13 | CNV0000100342RU2 | not exist               |            |                                               |                      |                                                            |
++----+------------------+-------------------------+------------+-----------------------------------------------+----------------------+------------------------------------------------------------+
+```
+
+
+<h3 id="h99">Добавленные почтовые службы</h3>
 
 ___
 
@@ -357,4 +670,5 @@ ___
 - [x] DPD Польши
 - [x] Global Track&Trace
 - [x] Почта Швеции
+- [x] CDEK
 
