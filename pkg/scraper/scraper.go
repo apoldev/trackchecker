@@ -18,7 +18,6 @@ const (
 	TaskTypeQuery         = "query"
 	DefaultRequestTimeout = 5 * time.Second
 
-	DefaultUserAgent      = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.152 Safari/537.36" //nolint:lll
 	DefaultAcceptLanguage = "en-US;q=0.6,en;q=0.4"
 	DefaultEncoding       = "utf-8"
 )
@@ -95,7 +94,7 @@ func (t *Task) Request(args *Args) error {
 	}
 
 	headers := map[string]string{
-		"User-Agent":      DefaultUserAgent,
+		"User-Agent":      args.getRandomUserAgent(),
 		"Accept-Language": DefaultAcceptLanguage,
 		"Encoding":        DefaultEncoding,
 	}

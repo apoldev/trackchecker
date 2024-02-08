@@ -1,6 +1,7 @@
 package scraper
 
 import (
+	"math/rand"
 	"net/http"
 	"time"
 
@@ -39,6 +40,13 @@ func NewArgs(variables Variables, httpClient *http.Client) *Args {
 		variables:     variables,
 		httpClient:    cl,
 	}
+}
+
+// Generate new userAgents with code-generation
+//
+//go:generate go run ./../useragent user_agent.go
+func (a *Args) getRandomUserAgent() string {
+	return userAgents[rand.Intn(len(userAgents))] //nolint:gosec // it's not a security issue
 }
 
 type ResultBuilder struct {

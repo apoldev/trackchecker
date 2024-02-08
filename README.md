@@ -82,7 +82,8 @@ ___
 docker-compose up
 ```
 
-Если требуется изменить [/api/swagger.yaml](./api/swagger.yaml) и перестроить http сервер, то выполнить команду:
+Если требуется изменить [/api/swagger.yaml](./api/swagger.yaml) и перестроить http сервер, то 
+установите [go-swagger](https://goswagger.io/) и выполнить команду для генерации кода:
 
 ```bash
 swagger generate server --exclude-main -f ./api/swagger.yaml -t ./internal/app/restapi --exclude-main
