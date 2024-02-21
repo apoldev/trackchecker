@@ -1,0 +1,78 @@
+version: "3.7"
+
+volumes:
+  nats_storage:
+
+configs:
+  trackchecker_config_4:
+    external: true
+
+networks:
+  traefik-public:
+    external: true
+
+services:
+  app:
+    image: ghcr.io/apoldev/trackchecker:latest
+    container_name: trackchecker_app
+    configs:
+      - source: trackchecker_config_4
+        target: /app/config.yml
+    networks:
+      - traefik-public
+    environment:
+      CONFIG_FILE: 'config.yml'
+    healthcheck:
+      test: echo $$(wget --server-response http://localhost:8080/docs 2>&1 | grep  '200 OK') | grep '200'  || exit 1
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    deploy:
+      replicas: 4
+      update_config:
+        parallelism: 2
+        delay: 10s
+        order: start-first
+        failure_action: rollback
+      placement:
+        constraints:
+          - node.labels.trackchecker==true
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.network=traefik-public"
+
+        - "traefik.http.routers.trackchecker-https.service=trackchecker"
+        - "traefik.http.routers.trackchecker-https.rule=Host(`trackchecker.1trackapp.com`)"
+        - "traefik.http.routers.trackchecker-https.entrypoints=https"
+        - "traefik.http.services.trackchecker.loadbalancer.server.port=8080"
+        - "traefik.http.routers.trackchecker-https.tls=true"
+        - "traefik.http.routers.trackchecker-https.tls.certresolver=le"
+
+        - "traefik.http.routers.trackchecker-grpc.service=trackcheckergrpc"
+        - "traefik.http.routers.trackchecker-grpc.rule=Host(`trackchecker-grpc.1trackapp.com`)"
+        - "traefik.http.routers.trackchecker-grpc.entrypoints=https"
+        - "traefik.http.services.trackcheckergrpc.loadbalancer.server.scheme=h2c"
+        - "traefik.http.services.trackcheckergrpc.loadbalancer.server.port=8070"
+        - "traefik.http.routers.trackchecker-grpc.tls=true"
+        - "traefik.http.routers.trackchecker-grpc.tls.certresolver=le"
+  redis:
+    image: redis:7.2.4-alpine
+    container_name: trackchecker_redis
+    networks:
+      - traefik-public
+  nats:
+    image: nats:2.10.9-alpine3.19
+    container_name: trackchecker_nats
+    networks:
+      - traefik-public
+    command: nats-server -js --config /etc/nats/nats-server.conf
+    healthcheck:
+      test: echo $$(wget --server-response http://localhost:8222/varz 2>&1 | grep  '200 OK') | grep '200'  || exit 1
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    volumes:
+      - ./configs/nats-server.conf:/etc/nats/nats-server.conf
+      - nats_storage:/nats/storage

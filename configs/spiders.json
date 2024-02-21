@@ -1,0 +1,609 @@
+[
+  {
+    "code": "sweden-post",
+    "masks": [
+      "[A-Z]{2}[0-9]{9}SE"
+    ],
+    "examples": [
+      "LE704280574SE"
+    ],
+    "tasks":[
+      {
+        "type":"request",
+        "payload":"https://api2.postnord.com/rest/shipment/v5/trackandtrace/recipientview?id=[track]&locale=en",
+        "params":{
+          "method":"GET",
+          "type":"json.xpath",
+          "headers": {
+            "x-bap-key": "web-ncp",
+            "Content-Type": "application/json"
+          }
+        },
+        "field":{
+        }
+      },
+      {
+        "type":"query",
+        "payload":"//events/*",
+        "field":{
+          "path":"events",
+          "type":"array",
+          "element":{
+            "type":"object",
+            "object":[
+              {
+                "path":"status",
+                "query":"./eventDescription",
+                "transformers": ["clean"]
+              },
+              {
+                "path":"date",
+                "query":"./eventTime",
+                "transformers": ["clean","date"]
+              },
+              {
+                "path":"place",
+                "query":"./location/name",
+                "transformers": ["clean"]
+              },
+              {
+                "path":"country",
+                "query":"./location/country",
+                "transformers": ["clean"]
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "code": "malaysia-post",
+    "masks": [
+      "[A-Z]{2}[0-9]{9}MY"
+    ],
+    "examples": [
+      "RC211375818MY"
+    ],
+    "tasks":[
+      {
+        "type":"request",
+        "payload":"https://ttu-svc.pos.com.my/api/trackandtrace/v1/request",
+        "params":{
+          "method":"POST",
+          "type":"json.xpath",
+          "body": "{\"connote_ids\":[\"[track]\"],\"culture\":\"en\"}",
+          "headers": {
+            "Accept": "application/json, text/plain, */*",
+            "Content-Type": "application/json"
+          }
+        },
+        "field":{
+        }
+      },
+      {
+        "type":"query",
+        "payload":"//node()[name()=\"tracking_data\"]/*",
+        "field":{
+          "path":"events",
+          "type":"array",
+          "element":{
+            "type":"object",
+            "object":[
+              {
+                "path":"status",
+                "query":"./process",
+                "transformers": ["clean"]
+              },
+              {
+                "path":"date",
+                "query":"./date",
+                "transformers": ["clean","date"]
+              },
+              {
+                "path":"place",
+                "query":"./office",
+                "transformers": ["clean"]
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "code": "new-zealand-post",
+    "masks": [
+      "[A-Z]{2}[0-9]{9}NZ",
+      "[A-Z]{2}[0-9]{9}AU"
+    ],
+    "examples": [
+      "LH256986182AU"
+    ],
+    "tasks":[
+      {
+        "type":"request",
+        "payload":"https://tools.nzpost.co.nz/tracking/api/parceltrack/parcels?tracking_reference=[track]",
+        "params":{
+          "method":"GET",
+          "type":"json.xpath"
+        },
+        "field":{
+        }
+      },
+      {
+        "type": "query",
+        "payload": "//signed_by/name",
+        "field": {
+          "path": "SignedBy"
+        }
+      },
+      {
+        "type":"query",
+        "payload":"//tracking_events/*",
+        "field":{
+          "path":"events",
+          "type":"array",
+          "element":{
+            "type":"object",
+            "object":[
+              {
+                "path":"status",
+                "query":"./status",
+                "transformers": ["clean"]
+              },
+              {
+                "path":"date",
+                "query":"./date_time",
+                "transformers": ["clean","date"]
+              },
+              {
+                "path":"place",
+                "query":"./depot_name",
+                "transformers": ["clean"]
+              },
+              {
+                "path":"details",
+                "query":"./description",
+                "transformers": ["clean"]
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "code": "south-korea",
+    "masks": [
+      "[A-Z]{2}[0-9]{9}KR"
+    ],
+    "examples": [
+      "EG014132620KR"
+    ],
+    "tasks":[
+      {
+        "type":"request",
+        "payload":"https://service.epost.go.kr/trace.RetrieveEmsRigiTraceList.comm?ems_gubun=E&sid1=&POST_CODE=[track]&mgbn=trace&traceselect=2&target_command=&JspURI=&postNum=[track]&x=9&y=9",
+        "params":{
+          "method":"GET",
+          "type":"xpath"
+        },
+        "field":{
+        }
+      },
+      {
+        "type":"query",
+        "payload":"//table[contains(@class,\"detail_off\")]//tr[position()>1]",
+        "field":{
+          "path":"events",
+          "type":"array",
+          "element":{
+            "type":"object",
+            "object":[
+              {
+                "path":"status",
+                "query":"./td[2]",
+                "transformers": ["clean"]
+              },
+              {
+                "path":"date",
+                "query":"./td[1]",
+                "transformers": [{
+                  "type": "replace.string",
+                  "params": {
+                    "old": ".",
+                    "new": "-"
+                  }
+                }, "date", "clean"]
+              },
+              {
+                "path":"place",
+                "query":"./td[3]",
+                "transformers": ["clean"]
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "code": "global-track-trace",
+    "masks": [
+      "[A-Z]{2}[0-9]{9}[A-Z]{2}"
+    ],
+    "examples": [
+      "RK166520145LV",
+      "RB328428764SG"
+    ],
+    "tasks":[
+      {
+        "type":"request",
+        "payload":"https://globaltracktrace.ptc.post/gtt.api/service.svc/rest/ItemTTWithTrans/[track]/en",
+        "params":{
+          "method":"GET",
+          "type":"json.xpath"
+        },
+        "field":{
+        }
+      },
+      {
+        "type": "query",
+        "payload": "//DestinationCountryCd",
+        "field": {
+          "path": "CountryTo"
+        }
+      },
+      {
+        "type": "query",
+        "payload": "//OriginCountryCd",
+        "field": {
+          "path": "CountryFrom"
+        }
+      },
+      {
+        "type":"query",
+        "payload":"//EventDT/..",
+        "field":{
+          "path":"events",
+          "type":"array",
+          "element":{
+            "type":"object",
+            "object":[
+              {
+                "path":"status",
+                "query":"EventNm"
+              },
+              {
+                "path":"date",
+                "query":"EventDT",
+                "transformers": [{
+                    "type": "regexp",
+                    "params": {
+                      "pattern": "([0-9]{4}-[0-9]{2}-[0-9]{2})T([0-9]{2}:[0-9]{2}:[0-9]{2})",
+                      "replace": "$1 $2"
+                    }
+                }, "date"]
+              },
+              {
+                "path":"place",
+                "query":"EventLocation",
+                "transformers": ["clean"]
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "code":"usps",
+    "masks": [
+      "[A-Z]{2}[0-9]{9}US",
+      "[0-9]{22}",
+      "[0-9]{26}",
+      "[0-9]{30}",
+      "[0-9]{34,35}"
+    ],
+    "examples": [
+      "EH036261918US"
+    ],
+    "tasks":[
+      {
+        "type":"request",
+        "payload":"http://production.shippingapis.com/ShippingApi.dll?API=TrackV2&XML=%3CTrackFieldRequest%20USERID=%22707HGUPS0501%22%3E%3CTrackID%20ID=%22[track]%22/%3E%3C/TrackFieldRequest%3E",
+        "params":{
+          "method":"GET",
+          "type":"xml"
+        }
+      },
+      {
+        "type":"query",
+        "payload":"//TrackSummary|//TrackDetail",
+        "field":{
+          "path":"events",
+          "type":"array",
+          "element":{
+            "type":"object",
+            "object":[
+              {
+                "path":"status",
+                "query":".//Event"
+              },
+              {
+                "path":"date",
+                "query":"concat(./EventDate,' ', ./EventTime)",
+                "transformers": ["date", "clean"]
+              },
+              {
+                "path":"place",
+                "query":"concat(./EventCity,', ', ./EventState, ' ', ./EventZIPCode)",
+                "transformers": ["clean"]
+              },
+              {
+                "path":"country",
+                "query":"./EventCountry"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "code":"russian-post",
+    "masks": [
+      "[0-9]{14}",
+      "[A-Z]{2}[0-9]{9}RU"
+    ],
+    "tasks":[
+      {
+        "type":"request",
+        "payload":"http://www.pochta.ru/api/tracking/api/v1/trackings/by-barcodes?language=ru\u0026track-numbers=[track]",
+        "params":{
+          "type":"json"
+        },
+        "field":{
+        }
+      },
+      {
+        "type":"query",
+        "payload":"detailedTrackings.0.trackingItem.recipient",
+        "field":{
+          "path":"Recipient"
+        }
+      },
+      {
+        "type":"query",
+        "payload":"detailedTrackings.0.trackingItem.sender",
+        "field":{
+          "path":"Sender"
+        }
+      },
+      {
+        "type":"query",
+        "payload":"detailedTrackings.0.trackingItem.trackingHistoryItemList",
+        "field":{
+          "path":"events",
+          "type":"array",
+          "element":{
+            "type":"object",
+            "object":[
+              {
+                "path":"status",
+                "query":"humanStatus"
+              },
+              {
+                "path":"date",
+                "query":"date"
+              },
+              {
+                "path":"place",
+                "query":"cityName"
+              },
+              {
+                "path":"zip",
+                "query":"index"
+              },
+              {
+                "path":"meta.description",
+                "query":"description"
+              },
+              {
+                "path":"meta.service",
+                "query":"countryCustomName"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "type":"query",
+        "payload":"detailedTrackings.0.trackingItem.trackingHistoryItemList.1",
+        "field":{
+          "path":"one_event_example",
+          "type":"object",
+          "object":[
+            {
+              "path":"status",
+              "query":"humanStatus"
+            },
+            {
+              "path":"date",
+              "query":"date"
+            },
+            {
+              "path":"place",
+              "query":"cityName"
+            },
+            {
+              "path":"zip",
+              "query":"index"
+            },
+            {
+              "path":"meta.description",
+              "query":"description"
+            },
+            {
+              "path":"meta.service",
+              "query":"countryCustomName"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "code":"dpd-poland",
+    "masks": [],
+    "tasks":[
+      {
+        "type":"request",
+        "payload":"https://tracktrace.dpd.com.pl/EN/findPackage",
+        "params":{
+          "body":"q=[track]\u0026typ=1",
+          "method":"POST",
+          "type":"xpath"
+        },
+        "field":{
+        }
+      },
+      {
+        "type":"query",
+        "payload":"//table[@class=\"table-track\"]/tbody/tr",
+        "field":{
+          "path":"events",
+          "type":"array",
+          "element":{
+            "type":"object",
+            "object":[
+              {
+                "path":"status",
+                "query":"./td[3]/text()[1]"
+              },
+              {
+                "path":"fulldate",
+                "query":"concat(//td[1],' ', //td[2])"
+              },
+              {
+                "path":"date",
+                "query":"td[1]"
+              },
+              {
+                "path":"time",
+                "query":"td[2]"
+              },
+              {
+                "path":"place",
+                "query":"./td[4]"
+              },
+              {
+                "path":"details",
+                "query":"./td[3]/a"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "code":"cdek",
+    "masks": [
+      "1[345][0-9]{8}",
+      "CN[A-Z0-9]+RU[0-9]{1}"
+    ],
+    "tasks":[
+      {
+        "type":"request",
+        "payload":"https://mobile-apps.cdek.ru/api/v2/order/[track]",
+        "params":{
+          "headers":{
+            "Accept-Language":"ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
+            "User-Agent":"CDEK/2.5 (com.cdek.cdekapp; build:1; iOS 13.3.1) Alamofire/4.9.1",
+            "X-User-Lang":"ru"
+          },
+          "method":"GET",
+          "type":"json.xpath"
+        },
+        "field":{
+        }
+      },
+      {
+        "type":"query",
+        "payload":"concat(//office/city/name,', ', //office/address)",
+        "field":{
+          "path":"AddressTo"
+        }
+      },
+      {
+        "type":"query",
+        "payload":"//office/latitude",
+        "field":{
+          "path":"delivery_office.latitude"
+        }
+      },
+      {
+        "type":"query",
+        "payload":"//office/longitude",
+        "field":{
+          "path":"delivery_office.longitude"
+        }
+      },
+      {
+        "type":"query",
+        "payload":"//realWeight",
+        "field":{
+          "path":"Weight"
+        }
+      },
+      {
+        "type":"query",
+        "payload":"//additionalInfo//goods/*/name",
+        "field":{
+          "path":"Goods",
+          "type":"array"
+        }
+      },
+      {
+        "type":"query",
+        "payload":"(//orderStatusGroups/* | //orderStatusGroups//statuses/*)",
+        "field":{
+          "path":"events",
+          "type":"array",
+          "element":{
+            "type":"object",
+            "object":[
+              {
+                "path":"status",
+                "query":"./title"
+              },
+              {
+                "path":"date",
+                "query":"./date",
+                "transformers":[
+                  {
+                    "type":"replace.regexp",
+                    "params":{
+                      "new":"$3-$2-$1",
+                      "regexp":"(\\d+)\\.(\\d+)\\.(\\d+)"
+                    }
+                  },
+                  {
+                    "type":"date",
+                    "params":null
+                  }
+                ]
+              },
+              {
+                "path":"place",
+                "query":"../../city"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  }
+]
