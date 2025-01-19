@@ -1,0 +1,29 @@
+config_spiders: ./configs/spiders.json
+
+broker: nats
+
+grpc_server:
+  port: 8070
+
+http_server:
+  host: 0.0.0.0
+  port: 8080
+
+redis:
+  host: redis
+  port: 6379
+
+nats:
+  server: nats://nats:4222
+  subject: tracking
+  stream_name: TRACKING
+  durable_name: durable
+  worker_count: 10
+  js_max_pending: 256
+
+kafka:
+  server: kafka:9092
+  consumer_group: tracking_group
+  topic: tracking.topic
+  worker_count: 10
+
